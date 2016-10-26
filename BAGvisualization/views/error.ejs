@@ -1,0 +1,256 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="utf-8">
+	<title>Force Layout with labels on edges</title>
+	<script src="http://d3js.org/d3.v3.min.js" charset="utf-8"></script>
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
+	<style type="text/css">
+	</style>
+</head>
+<body>
+
+	<script type="text/javascript">
+
+		var w = window.innerWidth || docEl.clientWidth || bodyEl.clientWidth,
+		h =  window.innerHeight|| docEl.clientHeight|| bodyEl.clientHeight;
+		var linkDistance=200;
+
+		var k = 0.025;
+
+		var current="#ff9933",
+		next="#e6e600",
+		previous="#ff3333",
+		none="#bfbfbf";
+
+		var prevJSON = null,
+		currJSON = null;
+
+		var nodesArray = [],
+		edgesArray = [];
+
+		setInterval(function() {
+			d3.json("/datos.json", function(json) {
+				currJSON = JSON.stringify(json);
+				if (prevJSON && currJSON && prevJSON !== currJSON) {
+					location.reload();
+				}
+				prevJSON = currJSON;
+			});
+		}, 2000);
+
+		d3.json("/datos.json", function(a){
+			for (var i = 0; i < a.nodes.length; i++) {
+				nodesArray.push(a.nodes[i]);
+			}
+			for (var i = 0; i < a.edges.length; i++) {
+				edgesArray.push(a.edges[i]);
+			}
+
+			var dataset = {nodes: nodesArray, edges: edgesArray}
+			var svg = d3.select("body").append("svg").attr({"width":w,"height":h});
+
+			var force = d3.layout.force()
+			.nodes(dataset.nodes)
+			.links(dataset.edges)
+			.size([w,h])
+			.linkDistance([linkDistance])
+			.charge(-2000);
+
+			setTimeout(function(){
+
+				var n = 100;
+				force.start();
+				for (var i = n * n; i > 0; --i) force.tick();
+				force.stop();
+
+				var prevRegExp=/previous(\d+)/,
+				currRegExp=/current(\d+)/,
+				nextRegExp=/next/;
+
+				var edges = svg.selectAll("line")
+				.data(dataset.edges)
+				.enter()
+				.append("line")
+				.attr("id",function(d,i) {return 'edge'+i})
+				.attr('marker-end',function(d,i){
+					if(d.target.status.match(prevRegExp)&&d.source.status.match(prevRegExp)&&
+						prevRegExp.exec(d.target.status)[1]-prevRegExp.exec(d.source.status)[1]===1){return 'url(#arrowheadPrevious)'}
+						else if(d.source.status.match(prevRegExp)&&d.target.status.match(currRegExp)&&
+							currRegExp.exec(d.target.status)[1]-prevRegExp.exec(d.source.status)[1]===1){return 'url(#arrowheadCurrent)'}
+							else if(d.source.status.match(currRegExp)&&d.target.status.match(nextRegExp)){return 'url(#arrowheadNext)'}
+								else {return 'url(#arrowheadNone)'}})
+				.style("stroke",function(d,i){
+					if(d.target.status.match(prevRegExp)&&d.source.status.match(prevRegExp)&&
+						prevRegExp.exec(d.target.status)[1]-prevRegExp.exec(d.source.status)[1]===1){return previous}
+						else if(d.source.status.match(prevRegExp)&&d.target.status.match(currRegExp)&&
+							currRegExp.exec(d.target.status)[1]-prevRegExp.exec(d.source.status)[1]===1){return current}
+							else if(d.source.status.match(currRegExp)&&d.target.status.match(nextRegExp)){return next}
+								else {return none}})
+				.style("pointer-events", "none")
+				.attr("x1", function(d) { return d.source.x; })
+				.attr("y1", function(d) { return d.source.y; })
+				.attr("x2", function(d) { return d.target.x; })
+				.attr("y2", function(d) { return d.target.y; });
+
+				var nodes = svg.selectAll("circle")
+				.data(dataset.nodes)
+				.enter()
+				.append("circle")
+				.attr({"r":30})
+				.style("fill",function(d,i){
+					if(d.status.match(currRegExp)){return current}
+						else if(d.status.match(nextRegExp)){return next}
+							else if(d.status.match(prevRegExp)){return previous}
+								else {return none}})
+				.style("stroke","black")
+				.call(force.drag)
+				.attr("cx", function(d) { return d.x; })
+				.attr("cy", function(d) { return d.y; });
+
+
+				var nodelabels = svg.selectAll(".nodelabel")
+				.data(dataset.nodes)
+				.enter()
+				.append("text")
+				.attr({"x":function(d){return d.x;},
+					"y":function(d){return d.y;},
+					"class":"nodelabel"})
+				.text(function(d){return d.title;});
+
+				var edgepaths = svg.selectAll(".edgepath")
+				.data(dataset.edges)
+				.enter()
+				.append('path')
+				.attr({'d': function(d) {return 'M '+d.source.x+' '+d.source.y+' L '+ d.target.x +' '+d.target.y},
+					'class':'edgepath',
+					'fill-opacity':0,
+					'stroke-opacity':0,
+					'fill':'blue',
+					'stroke':'red',
+					'id':function(d,i) {return 'edgepath'+i}})
+				.attr("x1", function(d) { return d.source.x; })
+				.attr("y1", function(d) { return d.source.y; })
+				.attr("x2", function(d) { return d.target.x; })
+				.attr("y2", function(d) { return d.target.y; })
+				.attr('d', function(d) { var path='M '+d.source.x+' '+d.source.y+' L '+ d.target.x +' '+d.target.y; return path})
+				.style("pointer-events", "none");
+
+				var edgelabels = svg.selectAll(".edgelabel")
+				.data(dataset.edges)
+				.enter()
+				.append('text')
+				.style("pointer-events", "none")
+				.attr({'class':'edgelabel',
+					'id':function(d,i){return 'edgelabel'+i},
+					'dx':100,
+					'dy':-10,
+					'font-size':20})
+				.attr("cx", function(d) { return d.x; })
+				.attr("cy", function(d) { return d.y; });
+
+				edgelabels.append('textPath')
+				.attr('xlink:href',function(d,i) {return '#edgepath'+i})
+				.style("pointer-events", "none")
+				.text(function(d,i){return d.weight});
+
+
+				svg.append('defs').append('marker')
+				.attr({'id':'arrowheadPrevious',
+					'viewBox':'-0 -5 10 10',
+					'refX':25,
+					'refY':0,
+				//'markerUnits':'strokeWidth',
+				'orient':'auto',
+				'markerWidth':20,
+				'markerHeight':20,
+				'xoverflow':'visible'})
+				.append('svg:path')
+				.attr('d', 'M 0,-5 L 10 ,0 L 0,5')
+				.style("fill", previous)
+				.attr('stroke',previous);
+
+				svg.append('defs').append('marker')
+				.attr({'id':'arrowheadNext',
+					'viewBox':'-0 -5 10 10',
+					'refX':25,
+					'refY':0,
+				//'markerUnits':'strokeWidth',
+				'orient':'auto',
+				'markerWidth':20,
+				'markerHeight':20,
+				'xoverflow':'visible'})
+				.append('svg:path')
+				.attr('d', 'M 0,-5 L 10 ,0 L 0,5')
+				.style('fill', next)
+				.attr('stroke', next);
+
+				svg.append('defs').append('marker')
+				.attr({'id':'arrowheadCurrent',
+					'viewBox':'-0 -5 10 10',
+					'refX':25,
+					'refY':0,
+				//'markerUnits':'strokeWidth',
+				'orient':'auto',
+				'markerWidth':20,
+				'markerHeight':20,
+				'xoverflow':'visible'})
+				.append('svg:path')
+				.attr('d', 'M 0,-5 L 10 ,0 L 0,5')
+				.style("fill", current)
+				.attr('stroke',current);
+
+				svg.append('defs').append('marker')
+				.attr({'id':'arrowheadNone',
+					'viewBox':'-0 -5 10 10',
+					'refX':25,
+					'refY':0,
+				//'markerUnits':'strokeWidth',
+				'orient':'auto',
+				'markerWidth':20,
+				'markerHeight':20,
+				'xoverflow':'visible'})
+				.append('svg:path')
+				.attr('d', 'M 0,-5 L 10 ,0 L 0,5')
+				.style("fill", none)
+				.attr('stroke',none);
+
+				setInterval(function(){
+					edgelabels.attr('transform',function(d,i){
+						if (d.target.x<d.source.x){
+							bbox = this.getBBox();
+							rx = bbox.x+bbox.width/2;
+							ry = bbox.y+bbox.height/2;
+							return 'rotate(180 '+rx+' '+ry+')';
+						}
+						else {
+							return 'rotate(0)';
+						}
+					});
+				}, 10);
+
+				force.on("tick", function(e){
+					var k = 5*e.alpha;
+					edges
+					.each(function(d) { d.source.y += k, d.target.y -= k, d.source.x -= k, d.target.x += k;})
+					.attr("x1", function(d) { return d.source.x; })
+					.attr("y1", function(d) { return d.source.y; })
+					.attr("x2", function(d) { return d.target.x; })
+					.attr("y2", function(d) { return d.target.y; });
+
+					nodes
+					.attr("cx", function(d) { return d.x; })
+					.attr("cy", function(d) { return d.y; });
+
+					nodelabels.attr("x", function(d) { return d.x; })
+					.attr("y", function(d) { return d.y; });
+
+					edgepaths.attr('d', function(d) { var path='M '+d.source.x+' '+d.source.y+' L '+ d.target.x +' '+d.target.y; return path});
+				});
+			});
+},100);
+
+</script>
+</body>
+</html>

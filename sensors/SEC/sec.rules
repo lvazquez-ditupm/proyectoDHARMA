@@ -1,0 +1,245 @@
+
+# Parseo de logs, generando eventos
+
+
+type=Calendar 
+time=9 18 * * 1-5
+desc=Horario no laboral 
+action=create NOCHE 46800
+
+type=Calendar 
+time=0 0 * * 6 
+desc=Fin de semana
+action=create FINDESEMANA 172800
+
+type=Single 
+ptype=RegExp 
+pattern=usb \d+-\d+: New USB device found, idVendor=(\d+), idProduct=(\d+) 
+desc=Nuevo USB con IDs $1 y $2
+continue=TakeNext
+action=none
+
+type=Single 
+ptype=RegExp 
+pattern=usb \d+-\d+: SerialNumber: (.+) 
+varmap=SERIALNUMBER; serial=1
+desc=Nuevo USB con Serial Number = $1
+continue=TakeNext
+action=none
+
+type=Single 
+ptype=Cached
+pattern=SERIALNUMBER
+context=SERIALNUMBER :> (sub {my $serial = $_[0]->{"serial"}; open (my $fh, "<USBserialnumbers.txt"); \
+while (my $linea=<$fh>){if($linea eq "$serial\n"){close ($fh); return 0;}} \
+close ($fh); return 1;})
+desc=USB desconocido detectado (Serial Number: $+{serial})
+action=logonly; event UNKNOWN_USB-$+{serial}; create UNKNOWN_USB 120
+
+type=SingleWithThreshold
+ptype=RegExp
+pattern=sshd\[\d+\]: Failed .+ for (\S+) from (.+) port (\d+) ssh2  
+desc=Fallo de login SSH al usuario $1 desde $2:$3 
+action=logonly; event SSH_INTENT_FAILURE-$1-$2-$3; create SSH_INTENT_FAILURE 120
+window=60
+thresh=3
+
+type=Single 
+ptype=RegExp 
+pattern=Wifi: anomalía detectada. MAC: (.*)
+desc=Dectectada anomalía en la red WiFi (MAC: $1)
+action=logonly; event WIFI_ANOMALY-$1; create WIFI_ANOMALY 120 
+
+type=Single 
+ptype=RegExp 
+pattern=Bluetooth: anomalía detectada. MAC: (.*)
+desc=Dectectado dispositivo Bluetooth desconocido (MAC: $1)
+action=logonly; event BT_ANOMALY-$1; create BT_ANOMALY 120 
+
+type=Single 
+ptype=RegExp 
+pattern=VulnScanner: Detectada vulnerabilidad (.*) que afecta al activo (.*)
+desc=Detectada vulnerabilidad $1 que afecta al activo $2
+action=logonly; event NEW_VULN-$1-$2; create NEW_VULN 86400
+
+type=Single 
+ptype=RegExp 
+pattern=HRScanner: el riesgo es (.+)
+desc=Variación en el riesgo de RRHH ($1)
+varmap=HR_PATTERN; risk=1
+continue=TakeNext
+action=logonly
+
+type=Single 
+ptype=Cached
+pattern=HR_PATTERN
+context=HR_PATTERN :> (sub {my $risk = $_[0]->{"risk"}; if($risk >= 5){return 1;} else {return 0;}})
+desc=HRScanner: Detectada anomalía de RRHH (Riesgo: $+{risk})
+continue=TakeNext
+action=logonly; event HR_ANOMALY; create HR_ANOMALY 86400
+
+type=Single 
+ptype=Cached
+pattern=HR_PATTERN
+context=HR_PATTERN :> (sub {my $risk = $_[0]->{"risk"}; if($risk < 5){return 1;} else {return 0;}})
+desc=HRScanner: Normalidad en datos de RRHH (Riesgo: $+{risk})
+action=logonly; delete HR_ANOMALY
+
+type=Single
+ptype=RegExp 
+pattern=Suricata: anomalía detectada. IP: (.*), MAC: (.*)
+desc=Detectada anomalía en el tráfico de la red (IP origen: $1, MAC origen: $2)
+action=logonly; event NETWORK_ANOMALY-$1-$2; create NETWORK_ANOMALY-$1-$2 120
+
+
+# Correlación de eventos
+
+
+type=Single
+ptype=RegExp
+context=WIFI_ANOMALY
+pattern=NETWORK_ANOMALY-(.*)-(.*)
+desc=EVENTO: Posible ataque de red mediante acceso WiFi (IP: $1 y MAC: $2)
+action=logonly
+
+type=SingleWithThreshold
+ptype=RegExp
+context=NETWORK_ANOMALY
+pattern=NETWORK_ANOMALY-(.*)-(.*)
+desc=EVENTO: Ataque de red (IP: $1 y MAC: $2)
+action=logonly; create NETWORK_ANOMALY-$1-$2 120
+window=60
+thresh=3
+
+type=Single
+ptype=RegExp
+context=UNKNOWN_USB
+pattern=WIFI_ANOMALY-(.*)
+desc=EVENTO: Se ha insertado una antena WiFi desconocida (MAC: $1)
+action=logonly
+
+type=Single
+ptype=RegExp
+context=UNKNOWN_USB
+pattern=BT_ANOMALY-(.*)
+desc=EVENTO: Se ha introducido una antena Bluetooth desconocida (MAC: $1)
+action=logonly
+
+type=Single
+ptype=RegExp
+context=NETWORK_ANOMALY
+pattern=SSH_INTENT_FAILURE-(.*)-(.*)-(.*)
+desc=EVENTO: Intento de intrusión SSH (Usuario $1 desde $2:$3)
+action=logonly
+
+type=Single
+ptype=RegExp
+context=NEW_VULN
+pattern=HR_ANOMALY
+desc=EVENTO: Posible intento de ataque de personal interno
+action=logonly; create CRITICAL_HR 120
+
+type=Single
+ptype=RegExp
+context=CRITICAL_HR
+pattern=SSH_INTENT_FAILURE-(.*)-(.*)-(.*)
+desc=EVENTO: Alta probabilidad de intento de ataque de trabajador interno (Usuario $1 desde $2:$3)
+action=logonly
+
+type=Single
+ptype=RegExp
+context=CRITICAL_HR
+pattern=UNKNOWN_USB-(.*)
+desc=EVENTO: Alta probabilidad de intento de ataque de trabajador interno (USB desconocido insertado con S/N: $1)
+action=logonly
+
+type=Single
+ptype=RegExp
+context=CRITICAL_HR
+pattern=NETWORK_ANOMALY-(.*)-(.*)
+desc=EVENTO: Alta probabilidad de intento de ataque de trabajador interno (Ataque de red con IP: $1 y MAC: $2)
+action=logonly
+
+type=Single
+ptype=RegExp
+context=CRITICAL_HR
+pattern=WIFI_ANOMALY-(.*)
+desc=EVENTO: Alta probabilidad de intento de ataque de trabajador interno (Anomalía en red WiFi con MAC: $1)
+action=logonly
+
+type=Single
+ptype=RegExp
+context=CRITICAL_HR
+pattern=BT_ANOMALY-(.*)
+desc=EVENTO: Alta probabilidad de intento de ataque de trabajador interno (Anomalía en dispositivos Bluetooth con MAC: $1)
+action=logonly
+
+type=Single
+ptype=RegExp
+context=HR_ANOMALY
+pattern=SSH_INTENT_FAILURE-(.*)-(.*)-(.*)
+desc=EVENTO: Posible intento de ataque de personal interno (Intento SSH al usuario $1 desde $2:$3)
+action=logonly
+
+type=Single
+ptype=RegExp
+context=HR_ANOMALY
+pattern=UNKNOWN_USB-(.*)
+desc=EVENTO: Posible intento de ataque de trabajador interno (USB desconocido insertado con S/N: $1)
+action=logonly
+
+type=Single
+ptype=RegExp
+context=HR_ANOMALY
+pattern=NETWORK_ANOMALY-(.*)-(.*)
+desc=EVENTO: Posible intento de ataque de trabajador interno (Ataque de red con IP: $1 y MAC: $2)
+action=logonly
+
+type=Single
+ptype=RegExp
+context=HR_ANOMALY
+pattern=WIFI_ANOMALY-(.*)
+desc=EVENTO: Posible intento de ataque de trabajador interno (Anomalía en red WiFi con MAC: $1)
+action=logonly
+
+type=Single
+ptype=RegExp
+context=HR_ANOMALY
+pattern=BT_ANOMALY-(.*)
+desc=EVENTO: Posible intento de ataque de trabajador interno (Anomalía en dispositivos Bluetooth con MAC: $1)
+action=logonly
+
+type=Single
+ptype=RegExp
+context=NOCHE||FINDESEMANA
+pattern=SSH_INTENT_FAILURE-(.*)-(.*)-(.*)
+desc=EVENTO: Intento SSH en horario no laboral (Usuario $1 desde $2:$3)
+action=logonly
+
+type=Single
+ptype=RegExp
+context=NOCHE||FINDESEMANA
+pattern=UNKNOWN_USB-(.*)
+desc=EVENTO: USB desconocido insertado en horario no laboral (S/N: $1)
+action=logonly
+
+type=Single
+ptype=RegExp
+context=NOCHE||FINDESEMANA
+pattern=NETWORK_ANOMALY-(.*)-(.*)
+desc=EVENTO: Ataque de red en horario no laboral (IP: $1 MAC: $2)
+action=logonly
+
+type=Single
+ptype=RegExp
+context=NOCHE||FINDESEMANA
+pattern=WIFI_ANOMALY-(.*)
+desc=EVENTO: Anomalía en red WiFi en horario no laboral (MAC: $1)
+action=logonly
+
+type=Single
+ptype=RegExp
+context=NOCHE||FINDESEMANA
+pattern=BT_ANOMALY-(.*)
+desc=EVENTO: Anomalía en dispositivos Bluetooth en horario no laboral (MAC: $1)
+action=logonly

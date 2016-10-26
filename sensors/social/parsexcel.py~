@@ -1,0 +1,13 @@
+import xlrd
+import time
+RISK_MAX = 50
+last_value=""
+while True:
+	workbook = xlrd.open_workbook('sensorSocial.xlsx')
+	worksheet = workbook.sheet_by_index(1)
+	risk =  worksheet.cell(10,16).value
+	if risk != last_value:
+		print risk
+		last_value = risk	
+	time.sleep(10)
+
