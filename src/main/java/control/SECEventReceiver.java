@@ -18,9 +18,15 @@ import utils.SECEventParser;
 public class SECEventReceiver implements Runnable {
 
     private final PropsUtil props = new PropsUtil();
+    Dharma dharma;
 
+    public SECEventReceiver(Dharma dharma) {
+        this.dharma = dharma;
+    }
+
+    @Override
     public void run() {
-        Dharma dharma = new Dharma();
+
         BufferedReader idmefDatos = null;
         String xml_file = props.getEventLogPathValue();
         try {
@@ -36,7 +42,7 @@ public class SECEventReceiver implements Runnable {
                             HashMap<String, Object> nodeData = new HashMap<>();
                             nodeData.put("node", str);
                             if (!nodeData.isEmpty()) {
-                                dharma.processEvent(nodeData);
+                                dharma.processEvent(nodeData, false, -1, -1, -1, "");
                             }
 
                         }

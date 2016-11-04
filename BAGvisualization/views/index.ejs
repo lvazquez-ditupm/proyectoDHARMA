@@ -7,489 +7,561 @@
 	<script src="http://d3js.org/d3.v3.min.js" charset="utf-8"></script>
 	<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
 	<style type="text/css">
-	.tooltip{                                                      
-	    background: #191919;
-	    opacity: .9;                                   
-	    color: #fff;                                                    
-	    display: none;                                                  
-	    font-size: 12px;
-	    font-family: 'Arial', sans-serif;                                                  
-	    padding: 10px;                                                  
-	    position: absolute;                                             
-	    text-align: center;                                                                          
-	    width: auto;                                                                                
-  	}
-  	a{
-  		color:white;
-  		text-decoration: none;
-  	}
+		.tooltip{                                                      
+			background: #191919;
+			opacity: .9;                                   
+			color: #fff;                                                    
+			display: none;                                                  
+			font-size: 12px;
+			font-family: 'Arial', sans-serif;                                                  
+			padding: 10px;                                                  
+			position: absolute;                                             
+			text-align: center;                                                                          
+			width: auto;                                                                                
+		}
+		a{
+			color:white;
+			text-decoration: none;
+		}
+		.hmmprob text {
+			pointer-events: none;
+			font: 10px sans-serif;
+		}
 	</style>
 </head>
 <body>
-	<div id="buttons">
-		<button onclick="anterior()" id="anterior">Anterior</button>
-		<button onclick="todos()">Todos</button>
-		<button onclick="siguiente()" id="siguiente">Siguiente</button>
-	</div>
+	<div id ="header">
+		<div id="buttons">	
+			<button onclick="anterior()" id="anterior">Anterior</button>
+			<button onclick="todos()">Todos</button>
+			<button onclick="siguiente()" id="siguiente">Siguiente</button>	
+			<div id = "buttonEnd" style="float:right">
+				<button onclick="endAttack()">Ataque finalizado</button>
+			</div>
+			<p id="attackinfo"></p>
+		</div>
+		<div id="graph"></div>
 
-	<div id="graph"></div>
-
-	<script type="text/javascript">
+		<script type="text/javascript">
 
 	//Editable variables
-		var linkDistance=100,
-			charge = -5000,
-			linkStrength = 2,
-			gravity = 0.1;
+	var linkDistance=100,
+	charge = -5000,
+	linkStrength = 2,
+	gravity = 0.1;
 
-		var currentColor="#ff9933",
-			nextColor="#e6e600",
-			previousColor="#ff1600",
-			noneColor="#bfbfbf";
+	var currentColor="#ff9933",
+	markovColor="#e6e600",
+	previousColor="#ff1600",
+	noneColor="#bfbfbf";
 	//
 
-		var jsonID = 0,
-			numberGraphs = 0;
+	var jsonID = 0,
+	numberGraphs = 0;
 
-		var prevJSON = null,
-			currJSON = null;
+	var prevJSON = null,
+	currJSON = null;
 
-		setInterval(function() {
-				d3.json("/datos"+jsonID+".json", function(json) {
-					currJSON = JSON.stringify(json);
-					if (prevJSON && currJSON && prevJSON !== currJSON) {
-    					map_init();
-					}
-					prevJSON = currJSON;
-				});
-			}, 1000);
-
-		map_init();
-
-		function siguiente(){
-			if(jsonID < numberGraphs){
-				$("#anterior").show();
-				jsonID+=1;
-			}else{
-				$("#siguiente").hide();
+	setInterval(function() {
+		d3.json("/datos"+jsonID+".json", function(json) {
+			currJSON = JSON.stringify(json);
+			if (prevJSON && currJSON && prevJSON !== currJSON) {
+				map_init();
 			}
-		}
+			prevJSON = currJSON;
+		});
+	}, 1000);
 
-		function todos(){
-			jsonID=0;
-    		$("#siguiente").show();
-		}
+	map_init();
 
-		function anterior(){
-			if(jsonID > 0){
-				jsonID-=1;
-				$("#siguiente").show();
+	function siguiente(){
+		if(jsonID < numberGraphs){
+			jsonID+=1;
+		}else{
+			$("#siguiente").hide();
+		}
+	}
+
+	function todos(){
+		jsonID=0;
+		$("#siguiente").show();
+	}
+
+	function anterior(){
+		if(jsonID > 0){
+			jsonID-=1;
+		}
+	}
+
+	function linkTo(id){
+		jsonID = id;
+
+	}
+
+	function endAttack(){
+		$.get("/delete", {id:jsonID});
+		numberGraphs--;
+		todos();
+	}
+
+	function firstScreen(show, done, attack){
+		if(show){
+			$("#attackinfo").html("Tipo de ataque: "+attack+"<br/>Porcentaje completado: "+done*100+"%");
+			$("#buttonEnd").show();
+			$("#anterior").show();
+		}else{
+			$("#attackinfo").html("<br/><br/>");
+			$("#buttonEnd").hide();
+			$("#anterior").hide();
+		}
+	}
+
+	function map_init(){
+
+		var urlParams;
+		(window.onpopstate = function () {
+			var match,
+			pl     = /\+/g,
+			search = /([^&=]+)=?([^&]*)/g,
+			decode = function (s) { return decodeURIComponent(s.replace(pl, " ")); },
+			query  = window.location.search.substring(1);
+
+			urlParams = {};
+			while (match = search.exec(query))
+				urlParams[decode(match[1])] = decode(match[2]);
+		})();
+
+		var w = $(document).width(),
+		h =  $(window).height()-100;
+
+		var nodesArray = [],
+		edgesArray = [],
+		routesArray = [],
+		previousNodes = [],
+		currentNode = [],
+		markovNodes = [],
+		routesArraySpecific = [],
+		donesArray=[],			
+		done= [],
+		attacksArray=[];
+
+		var txtFlag = true;
+
+
+		d3.json("/datos"+jsonID+".json", function(a){
+
+			if(jsonID==0){
+				firstScreen(false);
 			}else{
-				$("#anterior").hide();
+				firstScreen(true, a.done, a.attack);
 			}
-		}
 
-		function linkTo(id){
-			jsonID = id;
+			for (var i = 0; i < a.nodes.length; i++) {
+				nodesArray.push(a.nodes[i]);
+			}
+			for (var i = 0; i < a.edges.length; i++) {
+				edgesArray.push(a.edges[i]);
+			}
+			if(a.done.length > 0){
+				for (var i = 0; i < a.done.length; i++) {
+					donesArray.push(a.done[i]);
+					attacksArray.push(a.attack[i]);
+				}		
+			}else{
+				donesArray.push(a.done);
+				attacksArray.push(a.attack)
+			}
 
-		}
+			donesArray.reverse();
+			attacksArray.reverse();
 
-		function map_init(){
-
-			var urlParams;
-			(window.onpopstate = function () {
-	    		var match,
-			        pl     = /\+/g,
-			        search = /([^&=]+)=?([^&]*)/g,
-			        decode = function (s) { return decodeURIComponent(s.replace(pl, " ")); },
-			        query  = window.location.search.substring(1);
-
-	   			urlParams = {};
-	    		while (match = search.exec(query))
-	       			urlParams[decode(match[1])] = decode(match[2]);
-			})();
-
-			var w = window.innerWidth || docEl.clientWidth,
-			h =  window.innerHeight|| docEl.clientHeight;
-
-			var nodesArray = [],
-			edgesArray = [],
-			routesArray = [],
-			previousNodes = [],
-			currentNode = [],
-			nextNode = [],
-			routesArraySpecific = [];
-
-			var txtFlag = true;
-
-
-			d3.json("/datos"+jsonID+".json", function(a){
-
-				for (var i = 0; i < a.nodes.length; i++) {
-					nodesArray.push(a.nodes[i]);
-				}
-				for (var i = 0; i < a.edges.length; i++) {
-					edgesArray.push(a.edges[i]);
-				}
-				for (var i = 0; i < a.routes.length; i++) {
-					var res = a.routes[i].split("-");
-					res.pop();
-					if (res[res.length-1].lastIndexOf("*") > -1){
-						nextNode.push(res.pop().slice(0, -1));
+			for (var i = 0; i < a.routes.length; i++) {
+				var res = a.routes[i].split("-");
+				res.pop();
+				for (var j = res.length-1; j >= 0; j--) {
+					if (res[j].lastIndexOf("*") > -1){
+						markovNodes.push(res[j].slice(0, -1));
+						res.pop();
 					}
-					currentNode.push(res.pop());
-					previousNodes.push(res);
-					var route = {previousNodes, currentNode, nextNode};
-					routesArray.push(route);
-					previousNodes = [];
-					currentNode = [];
-					nextNode = [];
 				}
 
-				if (a.routes.length > numberGraphs) {
-					numberGraphs = a.routes.length;
-				}
+				markovNodes.reverse();
+				currentNode.push(res.pop());
+				previousNodes.push(res);
+				done.push(donesArray.pop());
+				var route = {previousNodes, currentNode, markovNodes, done:done.pop(), attack:attacksArray.pop()};
+				routesArray.push(route);
+				previousNodes = [];
+				currentNode = [];
+				markovNodes = [];
+			}
 
-				var dataset = {nodes: nodesArray, edges: edgesArray}
-				d3.selectAll("#svg_graph").remove();
-				var svg = d3.select("#graph").append("svg").attr({"width":w,"height":h}).attr("id", "svg_graph");
+			if (a.routes.length > numberGraphs) {
+				numberGraphs = a.routes.length;
+			}
 
-				var force = d3.layout.force()
-				.nodes(dataset.nodes)
-				.links(dataset.edges)
-				.size([w,h])
-				.linkDistance([linkDistance])
-				.charge(charge)
-				.linkStrength(linkStrength)
-				.gravity(gravity);
+			var dataset = {nodes: nodesArray, edges: edgesArray}
+			d3.selectAll("#svg_graph").remove();
+			var svg = d3.select("#graph").append("svg").attr({"width":w,"height":h}).attr("id", "svg_graph");
 
-				d3.selectAll(".tooltip").remove();
+			var force = d3.layout.force()
+			.nodes(dataset.nodes)
+			.links(dataset.edges)
+			.size([w,h])
+			.linkDistance([linkDistance])
+			.charge(charge)
+			.linkStrength(linkStrength)
+			.gravity(gravity);
 
-				var tooltip = d3.select("#graph")            
-			      .append('div')                             
-			      .attr('class', 'tooltip');                                 
-			    tooltip.append('div')                        
-			      .attr('class', 'route');
+			d3.selectAll(".tooltip").remove();
+
+			var tooltip = d3.select("#graph")            
+			.append('div')                             
+			.attr('class', 'tooltip');                                 
+			tooltip.append('div')                        
+			.attr('class', 'route');
 
 
-				setTimeout(function(){
+			setTimeout(function(){
 
-					var n = 1000;
-					force.start();
-					for (var i = n * n; i > 0; --i) force.tick();
+				var n = 1000;
+				force.start();
+				for (var i = n * n; i > 0; --i) force.tick();
 					force.stop();
 
-					var prevRegExp=/previous/,
-					currRegExp=/current/,
-					nextRegExp=/next/;
-					
+				var prevRegExp=/previous/,
+				currRegExp=/current/,
+				markovRegExp=/markov/;
 
-					edges = svg.selectAll("line")
-					.data(dataset.edges)
-					.enter()
-					.append("line")
-					.attr("id",function(d,i) {return 'edge'+i})
-					.attr('marker-end',function(d,i){
-						var next = false,
-						current = false,
-						previous = false;
-						for(var j = 0; j < routesArray.length; j++){
-							for(var k = 0; k < routesArray[j].previousNodes[0].length+1; k++){
-								if((routesArray[j].currentNode == d.source.title) && (routesArray[j].nextNode == d.target.title)){
-									next = true;
-								}
-								else if((routesArray[j].previousNodes[0][routesArray[j].previousNodes[0].length-1] == d.source.title) && (routesArray[j].currentNode == d.target.title)){
-									current = true;
-								}
-								else if((routesArray[j].previousNodes[0][k-1] == d.source.title) && (routesArray[j].previousNodes[0][k] == d.target.title)){
-									previous = true;
-								}
+				edges = svg.selectAll("line")
+				.data(dataset.edges)
+				.enter()
+				.append("line")
+				.attr("id",function(d,i) {return 'edge'+i})
+				.attr('marker-end',function(d,i){
+					var markov = false,
+					current = false,
+					previous = false;
+					for (var j = 0; j<routesArray.length; j++){
+						for(var k = 0; k < routesArray[j].previousNodes[0].length+1; k++){
+							if((routesArray[j].previousNodes[0][routesArray[j].previousNodes[0].length-1] == d.source.title) && (routesArray[j].currentNode == d.target.title)){
+								current = true;
+							}
+							else if((routesArray[j].previousNodes[0][k-1] == d.source.title) && (routesArray[j].previousNodes[0][k] == d.target.title)){
+								previous = true;
 							}
 						}
-						if(previous){return 'url(#arrowheadPrevious)'}
+
+						for(var k = 0; k < routesArray[j].markovNodes.length+1; k++){
+							if(((routesArray[j].markovNodes[k-1] == d.source.title) && (routesArray[j].markovNodes[k] == d.target.title))||(routesArray[j].markovNodes[0] == d.target.title) && (routesArray[j].currentNode == d.source.title)){
+								markov = true;
+							}
+						}
+					}
+					if(previous){return 'url(#arrowheadPrevious)'}
 						else if(current){return 'url(#arrowheadCurrent)'}
-						else if(next){return 'url(#arrowheadNext)'}
-						else {return 'url(#arrowheadNone)'}})
-					.style("stroke",function(d,i){
-						var next = false,
-						current = false,
-						previous = false;
+							else if(markov){return 'url(#arrowheadMarkov)'}
+								else {return 'url(#arrowheadNone)'}})
+				.style("stroke",function(d,i){
+					var markov = false,
+					current = false,
+					previous = false;
 
-						for(var j = 0; j < routesArray.length; j++){
-							for(var k = 0; k < routesArray[j].previousNodes[0].length+1; k++){
-
-								if((routesArray[j].currentNode == d.source.title) && (routesArray[j].nextNode == d.target.title)){
-									next = true;
-								}
-								else if((routesArray[j].previousNodes[0][routesArray[j].previousNodes[0].length-1] == d.source.title) && (routesArray[j].currentNode == d.target.title)){
-									current = true;
-								}
-								else if((routesArray[j].previousNodes[0][k-1] == d.source.title) && (routesArray[j].previousNodes[0][k] == d.target.title)){
-									previous = true;
-								}
+					for (var j = 0; j<routesArray.length; j++){
+						for(var k = 0; k < routesArray[j].previousNodes[0].length+1; k++){
+							if((routesArray[j].previousNodes[0][routesArray[j].previousNodes[0].length-1] == d.source.title) && (routesArray[j].currentNode == d.target.title)){
+								current = true;
+							}
+							else if((routesArray[j].previousNodes[0][k-1] == d.source.title) && (routesArray[j].previousNodes[0][k] == d.target.title)){
+								previous = true;
 							}
 						}
-						if(previous){return previousColor}
+
+						for(var k = 0; k < routesArray[j].markovNodes.length+1; k++){
+							if(((routesArray[j].markovNodes[k-1] == d.source.title) && (routesArray[j].markovNodes[k] == d.target.title))||(routesArray[j].markovNodes[0] == d.target.title) && (routesArray[j].currentNode == d.source.title)){
+								markov = true;
+							}
+						}
+					}
+
+					if(previous){return previousColor}
 						else if(current){return currentColor}
-						else if(next){return nextColor}
-						else {return noneColor}})
-					.style("pointer-events", "none")
-					.style("stroke-width","1.5px")
+							else if(markov){return markovColor}
+								else {return noneColor}})
+				.style("pointer-events", "none")
+				.style("stroke-width","1.5px")
+				.attr("x1", function(d) { return d.source.x; })
+				.attr("y1", function(d) { return d.source.y; })
+				.attr("x2", function(d) { return d.target.x; })
+				.attr("y2", function(d) { return d.target.y; });
+
+				var nodes = svg.selectAll("circle")
+				.data(dataset.nodes)
+				.enter()
+				.append("circle")
+				.attr({"r":20})
+				.style("fill",function(d,i){
+					if(d.status.match(currRegExp)){return currentColor}
+						else if(d.status.match(markovRegExp)){return markovColor}
+							else if(d.status.match(prevRegExp)){return previousColor}
+								else {return noneColor}})
+				.style("stroke","black")
+				.call(force.drag)
+				.attr("cx", function(d) { return d.x; })
+				.attr("cy", function(d) { return d.y; });
+
+
+				var nodelabels = svg.selectAll(".nodelabel")
+				.data(dataset.nodes)
+				.enter()
+				.append("text")
+				.attr({"x":function(d){return d.x+15;},
+					"y":function(d){return d.y-15;},
+					"class":"nodelabel",
+					"font-size":"15",
+					"font-weight":"bold"})
+				.text(function(d){return d.title;});
+
+				var hmmprob = svg.selectAll(".hmmprob")
+				.data(dataset.nodes)
+				.enter()
+				.append("text")
+				.attr({"x":function(d){return d.x-7},
+					"y":function(d){return d.y+4;},
+					"class":"nodelabel",
+					"font-size":"15",
+					"font-weight":"bold"})
+				.text(function(d){
+					if(d.status.includes("current")){
+						return d.status.substring(7);
+					}
+				});
+
+				var edgepaths = svg.selectAll(".edgepath")
+				.data(dataset.edges)
+				.enter()
+				.append('path')
+				.attr({'d': function(d) {return 'M '+d.source.x+' '+d.source.y+' L '+ d.target.x +' '+d.target.y},
+					'class':'edgepath',
+					'fill-opacity':0,
+					'stroke-opacity':0,
+					'fill':'blue',
+					'stroke':'red',
+					'id':function(d,i) {return 'edgepath'+i}})
+				.attr("x1", function(d) { return d.source.x; })
+				.attr("y1", function(d) { return d.source.y; })
+				.attr("x2", function(d) { return d.target.x; })
+				.attr("y2", function(d) { return d.target.y; })
+				.attr('d', function(d) { var path='M '+d.source.x+' '+d.source.y+' L '+ d.target.x +' '+d.target.y; return path})
+				.style("pointer-events", "none");
+
+				var edgelabels = svg.selectAll(".edgelabel")
+				.data(dataset.edges)
+				.enter()
+				.append('text')
+				.style("pointer-events", "none")
+				.attr({'class':'edgelabel',
+					'id':function(d,i){return 'edgelabel'+i},
+					'dx':function(d){
+						var x1 = d.source.px;
+						var x2 = d.target.px;
+						var y1 = d.source.py;
+						var y2 = d.target.py;
+						var dist = Math.sqrt(Math.pow(x2-x1,2)+Math.pow(y2-y1,2)); 
+						return dist/2;
+					},
+					'dy':-10,
+					'font-size':15})
+				.attr("cx", function(d) { return d.x; })
+				.attr("cy", function(d) { return d.y; });
+
+				edgelabels.append('textPath')
+				.attr('xlink:href',function(d,i) {return '#edgepath'+i})
+				.style("pointer-events", "none")
+				.text(function(d,i){return d.weight});
+
+
+				svg.append('defs').append('marker')
+				.attr({'id':'arrowheadPrevious',
+					'viewBox':'-0 -5 10 10',
+					'refX':27,
+					'refY':0,
+					'orient':'auto',
+					'markerWidth':8,
+					'markerHeight':8,
+					'xoverflow':'visible'})
+				.append('svg:path')
+				.attr('d', 'M 0,-5 L 10 ,0 L 0,5')
+				.style("fill", previousColor)
+				.attr('stroke',previousColor);
+
+				svg.append('defs').append('marker')
+				.attr({'id':'arrowheadMarkov',
+					'viewBox':'-0 -5 10 10',
+					'refX':27,
+					'refY':0,
+					'orient':'auto',
+					'markerWidth':8,
+					'markerHeight':8,
+					'xoverflow':'visible'})
+				.append('svg:path')
+				.attr('d', 'M 0,-5 L 10 ,0 L 0,5')
+				.style('fill', markovColor)
+				.attr('stroke', markovColor);
+
+				svg.append('defs').append('marker')
+				.attr({'id':'arrowheadCurrent',
+					'viewBox':'-0 -5 10 10',
+					'refX':27,
+					'refY':0,
+					'orient':'auto',
+					'markerWidth':8,
+					'markerHeight':8,
+					'xoverflow':'visible'})
+				.append('svg:path')
+				.attr('d', 'M 0,-5 L 10 ,0 L 0,5')
+				.style("fill", currentColor)
+				.attr('stroke',currentColor);
+
+				svg.append('defs').append('marker')
+				.attr({'id':'arrowheadNone',
+					'viewBox':'-0 -5 10 10',
+					'refX':27,
+					'refY':0,
+					'orient':'auto',
+					'markerWidth':8,
+					'markerHeight':8,
+					'xoverflow':'visible'})
+				.append('svg:path')
+				.attr('d', 'M 0,-5 L 10 ,0 L 0,5')
+				.style("fill", noneColor)
+				.attr('stroke',noneColor);
+
+				nodes.on('mouseover', function(d) {          
+					tooltip.select('.route').html(function(){
+
+						var htmlReturn = "";
+						for(var k = 0; k<routesArray.length;k++){
+							if((routesArray[k].previousNodes[0].indexOf(d.title) != -1 ||
+								routesArray[k].currentNode.indexOf(d.title) != -1 ||
+								routesArray[k].markovNodes.indexOf(d.title) != -1 ) &&
+								routesArraySpecific.indexOf(d.title)==-1){
+
+								var _tempArray = [];
+							Array.prototype.push.apply(_tempArray,routesArray[k].previousNodes[0]);
+							Array.prototype.push.apply(_tempArray,routesArray[k].currentNode);
+
+							for (var i = 0; i < routesArray[k].markovNodes.length; i++){
+								_tempArray.push(routesArray[k].markovNodes[i]+"*");
+							}
+							_tempArray.push(routesArray[k].attack, routesArray[k].done);
+							routesArraySpecific = _tempArray;
+							_tempArray=[];
+						}	
+					}				
+
+					var txt = "";
+					var id = 0;
+
+					done = routesArraySpecific.pop();
+					attack = routesArraySpecific.pop();
+
+					for (var i = 0; i < routesArraySpecific.length; i++) {								
+						txt = txt+routesArraySpecific[i]+"-";
+					}	
+
+					for (var k = 0; k < a.routes.length; k++){
+						if(a.routes[k]==txt){
+							id = k+1;
+							break;
+						}
+					}
+
+					txt = txt.slice(0,-1)
+
+					htmlReturn = htmlReturn+"<div onclick='linkTo("+id+")'><p>"+txt+"</p><p>"+attack+"</p><p>"+done*100+"% completado</p></div>";
+					txt="";
+					id=0;
+
+
+					if(routesArraySpecific.length==0){
+						txtFlag=false;
+						return null;
+					}else{
+						return htmlReturn;
+					}
+				});
+
+					tooltip.style('display', function(){
+						if (txtFlag==true && jsonID==0){
+							return 'block';
+						}else{
+							txtFlag=true;
+							return 'none';
+						}
+					});                                 
+				});
+
+				nodes.on('mouseout', function(d) {            
+					routesArraySpecific=[];                                
+				});
+
+				nodes.on('click', function(d) {            
+					tooltip.style('display', 'none');                              
+				});
+
+				nodes.on('mousemove', function(d) {
+					tooltip.style('top', (d3.event.layerY + 10) + 'px')
+					.style('left', (d3.event.layerX + 10) + 'px');
+				});
+
+				setInterval(function(){
+					edgelabels.attr('transform',function(d,i){
+						if (d.target.x<d.source.x){
+							bbox = this.getBBox();
+							rx = bbox.x+bbox.width/2;
+							ry = bbox.y+bbox.height/2;
+							return 'rotate(180 '+rx+' '+ry+')';
+						}
+						else {
+							return 'rotate(0)';
+						}
+					});
+				}, 10);
+
+				force.on("tick", function(e){
+
+					edges
 					.attr("x1", function(d) { return d.source.x; })
 					.attr("y1", function(d) { return d.source.y; })
 					.attr("x2", function(d) { return d.target.x; })
 					.attr("y2", function(d) { return d.target.y; });
 
-
-					var nodes = svg.selectAll("circle")
-					.data(dataset.nodes)
-					.enter()
-					.append("circle")
-					.attr({"r":15})
-					.style("fill",function(d,i){
-						if(d.status.match(currRegExp)){return currentColor}
-						else if(d.status.match(nextRegExp)){return nextColor}
-						else if(d.status.match(prevRegExp)){return previousColor}
-						else {return noneColor}})
-					.style("stroke","black")
-					.call(force.drag)
+					nodes
 					.attr("cx", function(d) { return d.x; })
 					.attr("cy", function(d) { return d.y; });
 
+					nodelabels.attr("x", function(d) { return d.x+15; })
+					.attr("y", function(d) { return d.y-15; });
 
-					var nodelabels = svg.selectAll(".nodelabel")
-					.data(dataset.nodes)
-					.enter()
-					.append("text")
-					.attr({"x":function(d){return d.x+15;},
-						"y":function(d){return d.y-15;},
-						"class":"nodelabel",
-						"font-size":"15",
-						"font-weight":"bold"})
-					.text(function(d){return d.title;});
+					hmmprob.attr("x", function(d) { return d.x-7; })
+					.attr("y", function(d) { return d.y+4; });
 
-					var edgepaths = svg.selectAll(".edgepath")
-					.data(dataset.edges)
-					.enter()
-					.append('path')
-					.attr({'d': function(d) {return 'M '+d.source.x+' '+d.source.y+' L '+ d.target.x +' '+d.target.y},
-						'class':'edgepath',
-						'fill-opacity':0,
-						'stroke-opacity':0,
-						'fill':'blue',
-						'stroke':'red',
-						'id':function(d,i) {return 'edgepath'+i}})
-					.attr("x1", function(d) { return d.source.x; })
-					.attr("y1", function(d) { return d.source.y; })
-					.attr("x2", function(d) { return d.target.x; })
-					.attr("y2", function(d) { return d.target.y; })
-					.attr('d', function(d) { var path='M '+d.source.x+' '+d.source.y+' L '+ d.target.x +' '+d.target.y; return path})
-					.style("pointer-events", "none");
+					edgepaths.attr('d', function(d) { var path='M '+d.source.x+' '+d.source.y+' L '+ d.target.x +' '+d.target.y; return path});
 
-					var edgelabels = svg.selectAll(".edgelabel")
-					.data(dataset.edges)
-					.enter()
-					.append('text')
-					.style("pointer-events", "none")
-					.attr({'class':'edgelabel',
-						'id':function(d,i){return 'edgelabel'+i},
-						'dx':function(d){
-							var x1 = d.source.px;
-							var x2 = d.target.px;
-							var y1 = d.source.py;
-							var y2 = d.target.py;
-							var dist = Math.sqrt(Math.pow(x2-x1,2)+Math.pow(y2-y1,2)); 
-							return dist/2;
-						},
-						'dy':-10,
-						'font-size':15})
-					.attr("cx", function(d) { return d.x; })
-					.attr("cy", function(d) { return d.y; });
-
-					edgelabels.append('textPath')
-					.attr('xlink:href',function(d,i) {return '#edgepath'+i})
-					.style("pointer-events", "none")
-					.text(function(d,i){return d.weight});
-
-
-					svg.append('defs').append('marker')
-					.attr({'id':'arrowheadPrevious',
-						'viewBox':'-0 -5 10 10',
-						'refX':22,
-						'refY':0,
-					'orient':'auto',
-					'markerWidth':8,
-					'markerHeight':8,
-					'xoverflow':'visible'})
-					.append('svg:path')
-					.attr('d', 'M 0,-5 L 10 ,0 L 0,5')
-					.style("fill", previousColor)
-					.attr('stroke',previousColor);
-
-					svg.append('defs').append('marker')
-					.attr({'id':'arrowheadNext',
-						'viewBox':'-0 -5 10 10',
-						'refX':22,
-						'refY':0,
-					'orient':'auto',
-					'markerWidth':8,
-					'markerHeight':8,
-					'xoverflow':'visible'})
-					.append('svg:path')
-					.attr('d', 'M 0,-5 L 10 ,0 L 0,5')
-					.style('fill', nextColor)
-					.attr('stroke', nextColor);
-
-					svg.append('defs').append('marker')
-					.attr({'id':'arrowheadCurrent',
-						'viewBox':'-0 -5 10 10',
-						'refX':22,
-						'refY':0,
-					'orient':'auto',
-					'markerWidth':8,
-					'markerHeight':8,
-					'xoverflow':'visible'})
-					.append('svg:path')
-					.attr('d', 'M 0,-5 L 10 ,0 L 0,5')
-					.style("fill", currentColor)
-					.attr('stroke',currentColor);
-
-					svg.append('defs').append('marker')
-					.attr({'id':'arrowheadNone',
-						'viewBox':'-0 -5 10 10',
-						'refX':22,
-						'refY':0,
-					'orient':'auto',
-					'markerWidth':8,
-					'markerHeight':8,
-					'xoverflow':'visible'})
-					.append('svg:path')
-					.attr('d', 'M 0,-5 L 10 ,0 L 0,5')
-					.style("fill", noneColor)
-					.attr('stroke',noneColor);
-
-					nodes.on('mouseover', function(d) {          
-					    tooltip.select('.route').html(function(){
-
-					    	var htmlReturn = ""
-					        
-					        for (var i = 0; i < routesArray.length; i++) {
-
-								if((routesArray[i].previousNodes[0].indexOf(d.title) != -1 ||
-									routesArray[i].currentNode[0].indexOf(d.title) != -1 ||
-									routesArray[i].nextNode.indexOf(d.title) != -1 ) &&
-									routesArraySpecific.indexOf(d.title)==-1){
-
-									var _tempArray = [];
-									Array.prototype.push.apply(_tempArray,routesArray[i].previousNodes[0]);
-									Array.prototype.push.apply(_tempArray,routesArray[i].currentNode);
-									var _size = _tempArray.length;
-									Array.prototype.push.apply(_tempArray,routesArray[i].nextNode)
-									if(	_size < _tempArray.length){
-										_tempArray[_tempArray.length-1] = _tempArray[_tempArray.length-1]+"*";
-									};	
-									routesArraySpecific.push(_tempArray);
-									_tempArray=[];
-								}					
-							}
-
-							var txt = "";
-							var id = 0;
-							
-							for (var i = 0; i < routesArraySpecific.length; i++) {
-								for (var j = 0; j < routesArraySpecific[i].length; j++) {
-									txt = txt+routesArraySpecific[i][j]+"-";
-								}
-
-								for (var k = 0; k < a.routes.length; k++){
-									if(a.routes[k]==txt){
-										id = k+1;
-										break;
-									}
-								}
-
-								txt = txt.slice(0,-1)
-
-								htmlReturn = htmlReturn+"<div onclick='linkTo("+id+")'><p>"+txt+"</p></div>";
-								txt="";
-								id=0;
-							}
-
-							if(routesArraySpecific.length==0){
-								txtFlag=false;
-								return null;
-							}else{
-								return htmlReturn;
-							}
-						});
-					    
-					    tooltip.style('display', function(){
-					    	if (txtFlag==true && jsonID==0){
-					    		return 'block';
-					    	}else{
-					    		txtFlag=true;
-					    		return 'none';
-					    	}
-					    });                                 
-					});
-					
-					nodes.on('mouseout', function(d) {            
-					    routesArraySpecific=[];                                
-					});
-
-					nodes.on('click', function(d) {            
-					    tooltip.style('display', 'none');                              
-					});
-
-					nodes.on('mousemove', function(d) {
-					    tooltip.style('top', (d3.event.layerY + 10) + 'px')
-					      .style('left', (d3.event.layerX + 10) + 'px');
-					});
-
-					setInterval(function(){
-						edgelabels.attr('transform',function(d,i){
-							if (d.target.x<d.source.x){
-								bbox = this.getBBox();
-								rx = bbox.x+bbox.width/2;
-								ry = bbox.y+bbox.height/2;
-								return 'rotate(180 '+rx+' '+ry+')';
-							}
-							else {
-								return 'rotate(0)';
-							}
-						});
-					}, 10);
-
-					force.on("tick", function(e){
-
-						edges
-						.attr("x1", function(d) { return d.source.x; })
-						.attr("y1", function(d) { return d.source.y; })
-						.attr("x2", function(d) { return d.target.x; })
-						.attr("y2", function(d) { return d.target.y; });
-
-						nodes
-						.attr("cx", function(d) { return d.x; })
-						.attr("cy", function(d) { return d.y; });
-
-						nodelabels.attr("x", function(d) { return d.x+15; })
-						.attr("y", function(d) { return d.y-15; });
-
-						edgepaths.attr('d', function(d) { var path='M '+d.source.x+' '+d.source.y+' L '+ d.target.x +' '+d.target.y; return path});
-
-						edgelabels.attr({'dx':function(d){
-							var x1 = d.source.px;
-							var x2 = d.target.px;
-							var y1 = d.source.py;
-							var y2 = d.target.py;
-							var dist = Math.sqrt(Math.pow(x2-x1,2)+Math.pow(y2-y1,2)); 
-							return dist/2;}
-						})
-					});
+					edgelabels.attr({'dx':function(d){
+						var x1 = d.source.px;
+						var x2 = d.target.px;
+						var y1 = d.source.py;
+						var y2 = d.target.py;
+						var dist = Math.sqrt(Math.pow(x2-x1,2)+Math.pow(y2-y1,2)); 
+						return dist/2;}
+					})
 				});
-			},100);
-		}
+			});
+},100);
+}
 
-	</script>
+</script>
 </body>
 </html>

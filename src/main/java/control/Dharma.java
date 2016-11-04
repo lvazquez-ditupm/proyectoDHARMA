@@ -3,6 +3,8 @@ package control;
 import core.ActionController;
 import core.BAG;
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.HashMap;
@@ -20,6 +22,10 @@ public class Dharma {
 
     private ArrayList<BAG> bagList = new ArrayList<>();
     private final PropsUtil props = new PropsUtil();
+
+    public Dharma() {
+        BAG.exportCleanJSON();
+    }
 
     /**
      * Crea una nueva red bayesiana a partir del JSON almacenado en la ruta
@@ -48,51 +54,88 @@ public class Dharma {
     /**
      * Procesa un evento recibido, actualizando el BAG o creando uno nuevo
      *
-     * @param eventString evento recibido
+     * @param eventMap evento recibido
      */
-    public void processEvent(HashMap<String, Object> eventString) {
+    public void processEvent(HashMap<String, Object> eventMap, boolean markov, int markovID, double probMarkov, double done, String attack) {
 
-        ArrayList<BAG> bagChangeList = getChangeList((String) eventString.get("node"));
+        ArrayList<BAG> bagChangeList = getChangeList((String) eventMap.get("node"));
 
-        if (bagChangeList.size() == 1) {
+        if (markov) {
+            try {
+                if (bagList.isEmpty()) {
+                    startNewBAG();
+                    BAG bag = bagList.get(bagList.size() - 1);
+                    bag.setMarkovID(markovID);
+                    bag.setPosition((String) eventMap.get("node"), bagList.indexOf(bag), bagList, false, probMarkov, done, attack);
+                    //doActions(bag, (String) eventMap.get("node"));
+
+                } else {
+                    boolean flag = false;
+                    for (BAG bag : bagList) {
+                        if (bag.getMarkovID() == markovID) {
+                            bag.setPosition((String) eventMap.get("node"), bagList.indexOf(bag), bagList, markov, probMarkov, done, attack);
+                            //doActions(bag, (String) eventMap.get("node"));
+                            flag = true;
+                            break;
+                        }
+                    }
+                    if (!flag) {
+                        startNewBAG();
+                        BAG bag = bagList.get(bagList.size() - 1);
+                        bag.setMarkovID(markovID);
+                        bag.setPosition((String) eventMap.get("node"), bagList.indexOf(bag), bagList, false, probMarkov, done, attack);
+                        //doActions(bag, (String) eventMap.get("node"));
+                    }
+                }
+
+            } catch (Exception ex) {
+                Logger.getLogger(Dharma.class.getName()).log(Level.SEVERE, null, ex);
+            }
+
+        }
+        /* if (bagChangeList.size() == 1) {
             try {
                 BAG bag = bagChangeList.get(0);
                 filterPhantom(bag, false);
                 orderList();
-                bag.setPosition((String) eventString.get("node"), bagList.indexOf(bag), bagList);
-                doActions(bag, (String) eventString.get("node"));
+                bag.setPosition((String) eventMap.get("node"), bagList.indexOf(bag), bagList, markov, probMarkov, done, attack);
+                doActions(bag, (String) eventMap.get("node"));
             } catch (Exception ex) {
                 System.err.println("Nodo no existente en la red");
             }
         } else if (bagChangeList.size() > 1) {
             try {
-                BAG bag = getWhoContinues(bagChangeList, (String) eventString.get("node"), true);
+                BAG bag = getWhoContinues(bagChangeList, (String) eventMap.get("node"), true);
                 orderList();
-                bag.setPosition((String) eventString.get("node"), bagList.indexOf(bag), bagList);
-                doActions(bag, (String) eventString.get("node"));
+                bag.setPosition((String) eventMap.get("node"), bagList.indexOf(bag), bagList, markov, probMarkov, done, attack);
+                doActions(bag, (String) eventMap.get("node"));
             } catch (Exception ex) {
                 System.err.println("Nodo no existente en la red");
             }
 
         } else {
-            startNewBAG();
             try {
+                if (bagList.isEmpty()) {
+                    startNewBAG();
+                }
                 BAG bag = bagList.get(bagList.size() - 1);
-                bag.setPosition((String) eventString.get("node"), bagList.size() - 1, bagList);
-                doActions(bag, (String) eventString.get("node"));
+                bag.setPosition((String) eventMap.get("node"), bagList.size() - 1, bagList, markov, probMarkov, done, attack);
+                doActions(bag, (String) eventMap.get("node"));
             } catch (Exception ex) {
                 System.err.println("Nodo no existente en la red");
             }
 
         }
-
-        deleteFolder();
+        deleteFolder(-1);*/
     }
 
     /**
      * Si varios grafos continuan al mismo nodo, estima cual es el que avanza
      *
      * @param bagChangeCandidates candidatos a continuar
+     * @param eventString evento al que hay que avanzar
+     * @param filter indica si hay grafos fantasma que deben ser eliminados
+     * @return grafo actualizado
      */
     public BAG getWhoContinues(ArrayList<BAG> bagChangeCandidates, String eventString, boolean filter) {
 
@@ -109,7 +152,7 @@ public class Dharma {
                     maxWeight = bag.getWeight(bag.getLastNode(), eventString);
                     nextBAG = bag;
                 } else if (bag.getWeight(bag.getLastNode(), eventString) == maxWeight
-                        && bag.getTime() < nextBAG.getTime() && bag.getCurrentTime().compareTo(Calendar.getInstance()) >= -10000) {  //cambiar
+                        && bag.getTime() < nextBAG.getTime() && bag.getCurrentTime().compareTo(Calendar.getInstance()) >= -10000) {  //To Do cambiar la fecha mínima para considerar 
                     nextBAG = bag;
                 }
             }
@@ -153,7 +196,7 @@ public class Dharma {
         //bag.setPosition(eventString, bagList.indexOf(bag), bagList);
         if (repairedBAG != null) {
             try {
-                repairedBAG.setPosition(nextNode, bagList.indexOf(repairedBAG), bagList);
+                repairedBAG.setPosition(nextNode, bagList.indexOf(repairedBAG), bagList, false, repairedBAG.getProbMarkov(), repairedBAG.getDone(), repairedBAG.getAttack());
                 doActions(repairedBAG, nextNode);
             } catch (Exception ex) {
                 Logger.getLogger(Dharma.class.getName()).log(Level.SEVERE, null, ex);
@@ -167,7 +210,6 @@ public class Dharma {
      *
      * @param collision indica que hay colisión entre dos BAG, para crear uno
      * nuevo fantasma
-     * @param bagChangeCandidates
      * @param nextBAG
      */
     public void filterPhantom(BAG nextBAG, boolean collision) {
@@ -211,7 +253,7 @@ public class Dharma {
      * Elimina los ficheros JSON de grafos eliminados
      */
     private void deleteFolder() {
-        File folder = new File(props.getBagVisualizatorPathValue()+"/public");
+        File folder = new File(props.getBagVisualizatorPathValue() + "/public");
         File[] files = folder.listFiles();
         ArrayList<BAG> visibleBagList = new ArrayList<>();
         String nombre;
@@ -234,6 +276,7 @@ public class Dharma {
                 }
             }
         }
+
     }
 
     /**
@@ -251,6 +294,47 @@ public class Dharma {
             }
         }
         return bagChangeList;
+    }
+
+    /**
+     * Elimina los nodos previstos por HMM del BAG que los posea
+     *
+     * @param markovNodes cadena de nodos a borrar
+     */
+    public void removeMarkov(ArrayList<String> markovNodes) {
+        for (BAG bag : bagList) {
+            bag.removeMarkov(markovNodes);
+        }
+    }
+
+    /**
+     * Elimina el BAG seleccionado
+     *
+     * @param id identificador del grafo
+     */
+    public void removeBAG(int id) {
+        try {
+            for (BAG bag : bagList) {
+                if (bagList.indexOf(bag) + 1 == id) {
+                    bagList.remove(bag);
+                    break;
+                }
+            }
+            for (BAG bag : bagList) {
+                bag.exportIndividualJSON(id - 1);
+            }
+
+            if (bagList.isEmpty()) {
+                BAG.exportCleanJSON();
+            } else {
+                bagList.get(0).exportCompleteJSON(bagList);
+            }
+            deleteFolder();
+
+        } catch (FileNotFoundException | UnsupportedEncodingException ex) {
+            Logger.getLogger(Dharma.class
+                    .getName()).log(Level.SEVERE, null, ex);
+        }
     }
 
     /**

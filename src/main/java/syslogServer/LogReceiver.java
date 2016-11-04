@@ -1,5 +1,6 @@
 package syslogServer;
 
+import control.Dharma;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
@@ -7,6 +8,7 @@ import java.net.SocketException;
 import java.net.UnknownHostException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import utils.MarkovController;
 
 /**
  * This class represents an receiver of logs coming from different IDSs
@@ -22,9 +24,11 @@ public class LogReceiver {
     public static Object lck = new Object();
     boolean received_alert = false;
     String log_received;
+    Dharma dharma;
 
-    public LogReceiver(int UDPport, String ip) {
+    public LogReceiver(Dharma dharma, int UDPport, String ip) {
         try {
+            this.dharma = dharma;
             socketUDP = new DatagramSocket(UDPport, InetAddress.getByName(ip));
         } catch (UnknownHostException | SocketException e) {
             System.err.println("Imposible obtener acceso al socket UDP. Terminando sistema...");
@@ -36,7 +40,7 @@ public class LogReceiver {
 
         System.out.println("****  Arrancando receptor de logs de AIRS externos  *****");
 
-        Receiver r = new Receiver();
+        Receiver r = new Receiver(dharma);
         ReceiveSocketUDPAlert u = new ReceiveSocketUDPAlert();
 
         new Thread(r).start();
@@ -88,16 +92,27 @@ public class LogReceiver {
 
         ExecutorService exec;
         SyslogCreator syslogCreator = new SyslogCreator();
-
-        public Receiver() {
+        Dharma dharma;
+        MarkovController markovController;
+        
+        public Receiver(Dharma dharma) {
             exec = Executors.newFixedThreadPool(10);
+            this.dharma = dharma;
+            markovController=new MarkovController();
         }
 
         public void run() {
             try {
                 while (true) {
                     String receivedLog = getAlert();
-                    syslogCreator.put(receivedLog);
+                    if (receivedLog.contains("HMM")) {
+                        markovController.parse(dharma, receivedLog);
+                    }else if(receivedLog.contains("Finished attack")){
+                        markovController.delete(dharma, receivedLog);
+                    }
+                    else {
+                        syslogCreator.put(receivedLog);
+                    }
                 }
             } catch (Exception ex) {
             }

@@ -3,6 +3,7 @@ package control;
 import syslogServer.LogReceiver;
 import syslogServer.SyslogCreator;
 import utils.ActivePeriods;
+import utils.MarkovController;
 
 /**
  * This class starts the system
@@ -16,12 +17,29 @@ public class Main {
     private static SensorConfigurator sensorConfigurator;
     private static DataCataloger dataCataloger;
     private static LogReceiver logReceiver;
-
+    private static Dharma dharma;
+    ///
+    private static MarkovController markovController;
+    ///
+    
     public static void main(String[] args) {
-        eventReceiver = new SECEventReceiver();
+        dharma  = new Dharma();
+        ///
+        markovController = new MarkovController();
+        ///
+        eventReceiver = new SECEventReceiver(dharma);
+        new Thread(eventReceiver).start();
+        ///
+        /*try {
+            Thread.sleep(3000);
+        } catch (InterruptedException ex) {
+        }*/
+        markovController.parse(dharma, "MarkovData: 0.90.1\"DDOS\"1D1-A1-A2-A3");
+        markovController.parse(dharma, "MarkovData: 0.30.4\"XSS\"2D2-D3-A2-N2");
+        ///
         //sensorConfigurator = new SensorConfigurator();
         //dataCataloger = new DataCataloger();
-        //logReceiver = new LogReceiver(512, "127.0.0.1");
+        logReceiver = new LogReceiver(dharma, 512, "127.0.0.1");
 
         //ActivePeriods.create();
         //new Thread(dataCataloger).start();
@@ -30,8 +48,7 @@ public class Main {
         } catch (InterruptedException ex) {
         }*/
         //new Thread(sensorConfigurator).start();
-        //logReceiver.start();
-        new Thread(eventReceiver).start();
+        logReceiver.start();
         /*SyslogCreator syslogCreator = new SyslogCreator();
         syslogCreator.put("---> Network ANOMALY of: 45/100");
         syslogCreator.put("10/18/2016-10:53:43.274321  [**] [1:2010937:2] ET POLICY "
