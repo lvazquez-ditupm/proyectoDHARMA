@@ -1,6 +1,5 @@
 package control;
 
-import core.ActionController;
 import core.BAG;
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -10,7 +9,7 @@ import java.util.Calendar;
 import java.util.HashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import utils.PropsUtil;
+import utils.DharmaProperties;
 
 /**
  * This class represents the DHARMA main
@@ -20,11 +19,11 @@ import utils.PropsUtil;
  */
 public class Dharma {
 
-    private ArrayList<BAG> bagList = new ArrayList<>();
-    private final PropsUtil props = new PropsUtil();
+    private static ArrayList<BAG> bagList = new ArrayList<>();
+    private static final DharmaProperties props = new DharmaProperties();
 
     public Dharma() {
-        BAG.exportCleanJSON();
+        
     }
 
     /**
@@ -55,8 +54,14 @@ public class Dharma {
      * Procesa un evento recibido, actualizando el BAG o creando uno nuevo
      *
      * @param eventMap evento recibido
+     * @param markovNodes
+     * @param markov
+     * @param markovID
+     * @param probMarkov
+     * @param done
+     * @param attack
      */
-    public void processEvent(HashMap<String, Object> eventMap, boolean markov, int markovID, double probMarkov, double done, String attack) {
+    public void processEvent(HashMap<String, Object> eventMap, ArrayList<String> markovNodes, boolean markov, int markovID, double probMarkov, double done, String attack) {
 
         ArrayList<BAG> bagChangeList = getChangeList((String) eventMap.get("node"));
 
@@ -66,14 +71,14 @@ public class Dharma {
                     startNewBAG();
                     BAG bag = bagList.get(bagList.size() - 1);
                     bag.setMarkovID(markovID);
-                    bag.setPosition((String) eventMap.get("node"), bagList.indexOf(bag), bagList, false, probMarkov, done, attack);
+                    bag.setPosition((String) eventMap.get("node"), bagList.indexOf(bag), bagList, markov, markovNodes, probMarkov, done, attack);
                     //doActions(bag, (String) eventMap.get("node"));
 
                 } else {
                     boolean flag = false;
                     for (BAG bag : bagList) {
                         if (bag.getMarkovID() == markovID) {
-                            bag.setPosition((String) eventMap.get("node"), bagList.indexOf(bag), bagList, markov, probMarkov, done, attack);
+                            bag.setPosition((String) eventMap.get("node"), bagList.indexOf(bag), bagList, markov, markovNodes, probMarkov, done, attack);
                             //doActions(bag, (String) eventMap.get("node"));
                             flag = true;
                             break;
@@ -83,7 +88,7 @@ public class Dharma {
                         startNewBAG();
                         BAG bag = bagList.get(bagList.size() - 1);
                         bag.setMarkovID(markovID);
-                        bag.setPosition((String) eventMap.get("node"), bagList.indexOf(bag), bagList, false, probMarkov, done, attack);
+                        bag.setPosition((String) eventMap.get("node"), bagList.indexOf(bag), bagList, markov, markovNodes, probMarkov, done, attack);
                         //doActions(bag, (String) eventMap.get("node"));
                     }
                 }
@@ -169,7 +174,7 @@ public class Dharma {
 
         return nextBAG;
     }
-
+/*
     /**
      * Repara el grafo si ante una coincidencia se ha hecho avanzar uno por
      * probabilidad y posteriormente se comprueba que es otro el grafo que
@@ -196,7 +201,7 @@ public class Dharma {
         //bag.setPosition(eventString, bagList.indexOf(bag), bagList);
         if (repairedBAG != null) {
             try {
-                repairedBAG.setPosition(nextNode, bagList.indexOf(repairedBAG), bagList, false, repairedBAG.getProbMarkov(), repairedBAG.getDone(), repairedBAG.getAttack());
+                repairedBAG.setPosition(nextNode, bagList.indexOf(repairedBAG), bagList, false, repairedBAG.getMarkovNodes(), repairedBAG.getProbMarkov(), repairedBAG.getDone(), repairedBAG.getAttack());
                 doActions(repairedBAG, nextNode);
             } catch (Exception ex) {
                 Logger.getLogger(Dharma.class.getName()).log(Level.SEVERE, null, ex);

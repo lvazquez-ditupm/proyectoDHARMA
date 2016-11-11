@@ -18,7 +18,7 @@ import java.util.logging.Logger;
  */
 public class ActivePeriods {
 
-    private static final PropsUtil props = new PropsUtil();
+    private static final DharmaProperties props = new DharmaProperties();
 
     public static void create() {
              

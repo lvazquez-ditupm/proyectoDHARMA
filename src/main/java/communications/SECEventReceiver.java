@@ -1,12 +1,13 @@
-package control;
+package communications;
 
+import control.Dharma;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import utils.PropsUtil;
+import utils.DharmaProperties;
 import utils.SECEventParser;
 
 /**
@@ -17,11 +18,10 @@ import utils.SECEventParser;
  */
 public class SECEventReceiver implements Runnable {
 
-    private final PropsUtil props = new PropsUtil();
-    Dharma dharma;
+    private final DharmaProperties props = new DharmaProperties();
+    Dharma dharma = new Dharma();
 
-    public SECEventReceiver(Dharma dharma) {
-        this.dharma = dharma;
+    public SECEventReceiver() {
     }
 
     @Override
@@ -42,7 +42,7 @@ public class SECEventReceiver implements Runnable {
                             HashMap<String, Object> nodeData = new HashMap<>();
                             nodeData.put("node", str);
                             if (!nodeData.isEmpty()) {
-                                dharma.processEvent(nodeData, false, -1, -1, -1, "");
+                                dharma.processEvent(nodeData, null, false, -1, -1, -1, "");
                             }
 
                         }

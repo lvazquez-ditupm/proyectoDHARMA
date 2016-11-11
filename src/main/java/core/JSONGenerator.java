@@ -4,7 +4,6 @@ import java.util.HashMap;
 import com.google.gson.Gson;
 import java.util.ArrayList;
 import java.util.LinkedHashSet;
-import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 import org.jgrapht.graph.DefaultEdge;
@@ -33,6 +32,7 @@ public class JSONGenerator {
      * @param position ID del ataque
      * @param probMarkov probabilidad de estar en el punto actual del HMM
      * @param done porcentaje realizado del ataque
+     * @param attack tipo de ataque
      * @return string JSON
      */
     public String individualGenerator(ListenableDirectedWeightedGraph<String, DefaultEdge> bag, String selectedNode, ArrayList<String> phaseHistory, ArrayList<String> markovNodes, int position, double probMarkov, double done, String attack) {
@@ -220,7 +220,7 @@ public class JSONGenerator {
             historyList.add(pathString);
         }
         
-        ArrayList<HashMap> _nodesList = new ArrayList<HashMap>(nodesList.stream().distinct().collect(Collectors.toList())); //Eliminar duplicados
+        ArrayList<HashMap> _nodesList = new ArrayList<>(nodesList.stream().distinct().collect(Collectors.toList())); //Eliminar duplicados
 
         jsonMap.put("nodes", _nodesList);
         jsonMap.put("edges", edgesList);

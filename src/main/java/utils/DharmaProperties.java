@@ -16,7 +16,7 @@ import java.util.Properties;
  * @author UPM (member of DHARMA Development Team)(http://dharma.inf.um.es)
  * @version 1.0
  */
-public class PropsUtil {
+public class DharmaProperties {
 
     private static Properties dharmaproperties;
 
@@ -45,7 +45,7 @@ public class PropsUtil {
     private static String ANOMALY_THRESHOLD_VALUE;
     private static String SYSLOG_PERIOD_VALUE;
 
-    public PropsUtil() {
+    public DharmaProperties() {
         dharmaproperties = new Properties();
         InputStream is = null;
         try {

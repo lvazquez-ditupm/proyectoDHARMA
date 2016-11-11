@@ -1,9 +1,10 @@
 package control;
 
-import syslogServer.LogReceiver;
-import syslogServer.SyslogCreator;
+import communications.SECEventReceiver;
+import core.BAG;
+import communications.LogReceiver;
+import communications.SyslogCreator;
 import utils.ActivePeriods;
-import utils.MarkovController;
 
 /**
  * This class starts the system
@@ -21,25 +22,28 @@ public class Main {
     ///
     private static MarkovController markovController;
     ///
-    
+
     public static void main(String[] args) {
-        dharma  = new Dharma();
+        dharma = new Dharma();
+        BAG.exportCleanJSON();
         ///
         markovController = new MarkovController();
         ///
-        eventReceiver = new SECEventReceiver(dharma);
+        eventReceiver = new SECEventReceiver();
         new Thread(eventReceiver).start();
         ///
         /*try {
             Thread.sleep(3000);
         } catch (InterruptedException ex) {
         }*/
-        markovController.parse(dharma, "MarkovData: 0.90.1\"DDOS\"1D1-A1-A2-A3");
-        markovController.parse(dharma, "MarkovData: 0.30.4\"XSS\"2D2-D3-A2-N2");
+        //markovController.parse("HMM: IDAtaque=\"1\";TipoAtaque=\"DDOS\";Nodos=\"D2,D3,A2,N2\";Estado=\"D2\";PEstado=\"0.3\";PFFinal=\"0.4\"");
+        //markovController.parse("HMM: IDAtaque=\"1\";TipoAtaque=\"DDOS\";Nodos=\"D2,D3,A2,N2\";Estado=\"D3\";PEstado=\"0.3\";PFFinal=\"0.4\"");
+        //markovController.parse("HMM: IDAtaque=\"1\";TipoAtaque=\"DDOS\";Nodos=\"D2,D3,A2,N2\";Estado=\"N2\";PEstado=\"0.3\";PFFinal=\"0.4\"");
         ///
-        //sensorConfigurator = new SensorConfigurator();
+        sensorConfigurator = new SensorConfigurator();
         //dataCataloger = new DataCataloger();
-        logReceiver = new LogReceiver(dharma, 512, "127.0.0.1");
+        
+        logReceiver = new LogReceiver(512, "127.0.0.1");
 
         //ActivePeriods.create();
         //new Thread(dataCataloger).start();
@@ -47,15 +51,15 @@ public class Main {
             Thread.sleep(1000);
         } catch (InterruptedException ex) {
         }*/
-        //new Thread(sensorConfigurator).start();
+        new Thread(sensorConfigurator).start();
         logReceiver.start();
         /*SyslogCreator syslogCreator = new SyslogCreator();
         syslogCreator.put("---> Network ANOMALY of: 45/100");
         syslogCreator.put("10/18/2016-10:53:43.274321  [**] [1:2010937:2] ET POLICY "
                 + "Suspicious inbound to mySQL port 3306 [**] [Classification: Potentially Bad Traffic] "
-                + "[Priority: 2] {TCP} 10.0.0.19:33167 -> 10.0.0.18:3306");
+                + "[Priority: 2] {TCP} 10.0.0.19:33167 -> 10.0.0.18:3306");*/
         
-        syslogCreator.put("10/18/2016-10:53:44.274321  [**] [1:2010937:2] ET POLICY "
+        /*syslogCreator.put("10/18/2016-10:53:44.274321  [**] [1:2010937:2] ET POLICY "
                 + "Suspicious inbound to hola port 3307 [**] [Classification: Potentially Bad Traffic] "
                 + "[Priority: 2] {TCP} 10.0.0.19:33143 -> 10.0.0.18:3307");
         
@@ -65,6 +69,6 @@ public class Main {
                 + "[Priority: 2] {TCP} 10.0.0.19:8080 -> 10.0.0.18:1234");
         
         syslogCreator.put("Anomalía WiFi en biblioteca;\"IP\":\"192.168.1.1\";\"MAC\":\"AA:DD:33:11:01\"");*/
-        
+
     }
 }

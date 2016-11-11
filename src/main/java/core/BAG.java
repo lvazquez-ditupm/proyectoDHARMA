@@ -16,7 +16,7 @@ import java.util.HashSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.jgrapht.graph.*;
-import utils.PropsUtil;
+import utils.DharmaProperties;
 
 /**
  * This class represents the Bayesian Acyclic Graph needed to make an Attack
@@ -40,7 +40,7 @@ public class BAG {
     private Calendar startTime;
     private Calendar currentTime;
     private BAG link;
-    private final PropsUtil props = new PropsUtil();
+    private final DharmaProperties props = new DharmaProperties();
 
     /**
      * Crea un grafo acíclico bayesiano
@@ -104,21 +104,20 @@ public class BAG {
      *
      * @param node nodo a establecer la posición
      */
-    public void setPosition(String node, int position, ArrayList<BAG> bags, boolean markov, double probMarkov, double done, String attack) throws Exception {
+    public void setPosition(String node, int position, ArrayList<BAG> bags, boolean markov, ArrayList<String> markovNodes, double probMarkov, double done, String attack) throws Exception {
         if (!bag.containsVertex(node)) {
             throw new Exception("Nodo no existente en la red bayesiana");
         }
 
-        if (!markov) {
-            selectedNode = node;
-            phaseHistory.add(selectedNode);
-            currentTime = Calendar.getInstance();
-        } else {
-            markovNodes.add(node);
+        if (markov) {
+            this.markovNodes = markovNodes;
             this.probMarkov = probMarkov;
             this.done = done;
             this.attack = attack;
         }
+        selectedNode = node;
+        phaseHistory.add(selectedNode);
+        currentTime = Calendar.getInstance();
 
         try {
             if (!this.isPhantom()) {
@@ -392,7 +391,7 @@ public class BAG {
                 Logger.getLogger(BAG.class.getName()).log(Level.SEVERE, null, ex);
             }
         }
-        
+
         String json = jsonGen.totalGenerator(bag, selectedNodes, markovNodes_, phaseHistories, probsMarkov, doneList, attacks);
 
         PrintWriter writer = new PrintWriter(props.getBagVisualizatorPathValue() + "/public/datos0.json", "UTF-8");

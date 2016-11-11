@@ -1,5 +1,6 @@
-package syslogServer;
+package communications;
 
+import control.MCCDcontroller;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -8,10 +9,10 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.logging.Level;
-import utils.PropsUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import utils.EventParser;
+import utils.DharmaProperties;
+import utils.SuricataEventParser;
 
 /**
  * This class generates Syslog entries based on logs received
@@ -21,7 +22,7 @@ import utils.EventParser;
  */
 public class SyslogCreator {
 
-    private final PropsUtil props = new PropsUtil();
+    private final DharmaProperties props = new DharmaProperties();
     private static final Logger logger = LoggerFactory.getLogger(SyslogCreator.class);
 
     ArrayList<HashMap<String, Date>> receivedEvents;
@@ -77,7 +78,7 @@ public class SyslogCreator {
                 refDate = currDate;
                 event.put(log.substring(log.indexOf("]", log.indexOf("]") + 1) + 2), currDate);
                 receivedEvents.add(event);
-                proceedIDS(EventParser.parseIDS(log.substring(log.indexOf("]", log.indexOf("]") + 1) + 2)));
+                proceedIDS(SuricataEventParser.parseIDS(log.substring(log.indexOf("]", log.indexOf("]") + 1) + 2)));
             } catch (ParseException ex) {
                 java.util.logging.Logger.getLogger(SyslogCreator.class.getName()).log(Level.SEVERE, null, ex);
             }
@@ -94,7 +95,7 @@ public class SyslogCreator {
                         refDate = currDate;
                         event.put(log.substring(log.indexOf("]", log.indexOf("]") + 1) + 2), currDate);
                         receivedEvents.add(event);
-                        proceedIDS(EventParser.parseIDS(log.substring(log.indexOf("]", log.indexOf("]") + 1) + 2)));
+                        proceedIDS(SuricataEventParser.parseIDS(log.substring(log.indexOf("]", log.indexOf("]") + 1) + 2)));
                         return;
                     }
                 }
@@ -103,7 +104,7 @@ public class SyslogCreator {
                     event.put(log.substring(log.indexOf("]", log.indexOf("]") + 1) + 2), currDate);
                     receivedEvents.add(event);
                 } else {
-                    proceedIDS(EventParser.parseIDS(log.substring(log.indexOf("]", log.indexOf("]") + 1) + 2)));
+                    proceedIDS(SuricataEventParser.parseIDS(log.substring(log.indexOf("]", log.indexOf("]") + 1) + 2)));
                 }
 
             } catch (ParseException ex) {
@@ -119,7 +120,7 @@ public class SyslogCreator {
      * @param event evento recibido
      */
     private void setAnomalyLog(String event) {
-        proceedAnomaly(EventParser.parseAnomaly(event));
+        proceedAnomaly(SuricataEventParser.parseAnomaly(event));
     }
 
     /**
@@ -128,14 +129,18 @@ public class SyslogCreator {
      * @param event evento recibido
      */
     private void proceedIDS(HashMap<String, String> eventReceived) {
-        String out = "IDSAnomaly: ";
+        
+        MCCDcontroller mccd = new MCCDcontroller();
+        mccd.simulateHMM(eventReceived);
+        
+        /*String out = "IDSAnomaly: ";
         Iterator it = eventReceived.entrySet().iterator();
         while (it.hasNext()) {
             Map.Entry e = (Map.Entry) it.next();
             out += e.getKey() + "=" + e.getValue() + "; ";
         }
 
-        logger.info(out);
+        logger.info(out);*/
     }
 
     /**
@@ -164,7 +169,7 @@ public class SyslogCreator {
      * @return boolean indicando si es o no repetido
      */
     private boolean detectRepeatedIDSEvent(String event_) {
-        HashMap<String, String> eventReceivedParsed = EventParser.parseIDS(event_);
+        HashMap<String, String> eventReceivedParsed = SuricataEventParser.parseIDS(event_);
         HashMap<String, String> eventSavedParsed;
         String[] keys;
         boolean event = false;
@@ -178,7 +183,7 @@ public class SyslogCreator {
 
         for (HashMap<String, Date> receivedEvent : receivedEvents) {
 
-            eventSavedParsed = EventParser.parseIDS((String) receivedEvent.keySet().toArray()[0]);
+            eventSavedParsed = SuricataEventParser.parseIDS((String) receivedEvent.keySet().toArray()[0]);
 
             event = eventSavedParsed.get("event").equals(eventReceivedParsed.get("event"));
             classification = eventSavedParsed.get("classification").equals(eventReceivedParsed.get("classification"));

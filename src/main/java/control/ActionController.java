@@ -1,4 +1,6 @@
-package core;
+package control;
+
+import core.BAG;
 
 /**
  * This class represents the controller which select the actions related to a
