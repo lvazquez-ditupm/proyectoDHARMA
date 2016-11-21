@@ -10,7 +10,7 @@ import javax.script.ScriptEngine;
 import javax.script.ScriptEngineManager;
 import javax.script.ScriptException;
 import javax.script.SimpleScriptContext;
-import utils.PropsUtil;
+import utils.DharmaProperties;
 
 /**
  * This class represents the controller which select the actions related to a
@@ -21,7 +21,7 @@ import utils.PropsUtil;
  */
 public class SensorConfigurator implements Runnable {
 
-    private static final PropsUtil props = new PropsUtil();
+    private static final DharmaProperties props = new DharmaProperties();
 
     public void run() {
         

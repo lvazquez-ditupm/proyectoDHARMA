@@ -1,5 +1,6 @@
-package syslogServer;
+package communications;
 
+import control.Dharma;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
@@ -7,6 +8,7 @@ import java.net.SocketException;
 import java.net.UnknownHostException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import control.MarkovController;
 
 /**
  * This class represents an receiver of logs coming from different IDSs
@@ -22,6 +24,7 @@ public class LogReceiver {
     public static Object lck = new Object();
     boolean received_alert = false;
     String log_received;
+    Dharma dharma = new Dharma();
 
     public LogReceiver(int UDPport, String ip) {
         try {
@@ -34,7 +37,7 @@ public class LogReceiver {
 
     public void start() {
 
-        System.out.println("****  Arrancando receptor de logs de AIRS externos  *****");
+        System.out.println("****  Arrancando receptor de logs de AIRS externos  ****");
 
         Receiver r = new Receiver();
         ReceiveSocketUDPAlert u = new ReceiveSocketUDPAlert();
@@ -88,16 +91,27 @@ public class LogReceiver {
 
         ExecutorService exec;
         SyslogCreator syslogCreator = new SyslogCreator();
+        Dharma dharma = new Dharma();
+        MarkovController markovController;
 
         public Receiver() {
             exec = Executors.newFixedThreadPool(10);
+            markovController = new MarkovController();
         }
 
+        @Override
         public void run() {
             try {
                 while (true) {
                     String receivedLog = getAlert();
-                    syslogCreator.put(receivedLog);
+                    System.out.println(receivedLog);
+                    if (receivedLog.contains("HMM")) {
+                        markovController.parse(receivedLog);
+                    } else if (receivedLog.contains("Finished attack")) {
+                        markovController.delete(receivedLog);
+                    } else {
+                        syslogCreator.put(receivedLog);
+                    }
                 }
             } catch (Exception ex) {
             }
@@ -109,6 +123,7 @@ public class LogReceiver {
      */
     class ReceiveSocketUDPAlert implements Runnable {
 
+        @Override
         public void run() {
 
             String logFormatted;

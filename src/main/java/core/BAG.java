@@ -16,7 +16,7 @@ import java.util.HashSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.jgrapht.graph.*;
-import utils.PropsUtil;
+import utils.DharmaProperties;
 
 /**
  * This class represents the Bayesian Acyclic Graph needed to make an Attack
@@ -30,13 +30,17 @@ public class BAG {
     private ListenableDirectedWeightedGraph<String, DefaultEdge> bag;
     private Boolean phantom;
     private String selectedNode;
-    private String nextNode;
+    private double probMarkov;
+    private double done;
+    private String attack;
     private ArrayList<String> phaseHistory;
     private ArrayList<HashMap<String, String>> eventHistoryData;
+    private ArrayList<String> markovNodes;
+    private int markovID;
     private Calendar startTime;
     private Calendar currentTime;
     private BAG link;
-    private final PropsUtil props = new PropsUtil();
+    private final DharmaProperties props = new DharmaProperties();
 
     /**
      * Crea un grafo acíclico bayesiano
@@ -45,6 +49,7 @@ public class BAG {
     public BAG() {
         phaseHistory = new ArrayList<>();
         eventHistoryData = new ArrayList<>();
+        markovNodes = new ArrayList<>();
         startTime = Calendar.getInstance();
         currentTime = startTime;
         phantom = false;
@@ -99,13 +104,21 @@ public class BAG {
      *
      * @param node nodo a establecer la posición
      */
-    public void setPosition(String node, int position, ArrayList<BAG> bags) throws Exception {
+    public void setPosition(String node, int position, ArrayList<BAG> bags, boolean markov, ArrayList<String> markovNodes, double probMarkov, double done, String attack) throws Exception {
         if (!bag.containsVertex(node)) {
             throw new Exception("Nodo no existente en la red bayesiana");
+        }
+
+        if (markov) {
+            this.markovNodes = markovNodes;
+            this.probMarkov = probMarkov;
+            this.done = done;
+            this.attack = attack;
         }
         selectedNode = node;
         phaseHistory.add(selectedNode);
         currentTime = Calendar.getInstance();
+
         try {
             if (!this.isPhantom()) {
                 exportIndividualJSON(position);
@@ -183,7 +196,7 @@ public class BAG {
     public String getNodeStatus(String node) {
         if (node.equals(this.getPosition())) {
             return "current";
-        } else if (node.equals(this.getNext())) {
+        } else if (getMarkovNodes().contains(node)) {
             return "next";
         } else if (this.getPhaseHistory().contains(node)) {
             return "previous";
@@ -212,12 +225,12 @@ public class BAG {
     }
 
     /**
-     * Devuelve el nodo siguiente
+     * Devuelve los nodos previstos por el HMM
      *
-     * @return nombre del nodo
+     * @return lista de nodos
      */
-    public String getNext() {
-        return nextNode;
+    public ArrayList<String> getMarkovNodes() {
+        return markovNodes;
     }
 
     /**
@@ -277,20 +290,6 @@ public class BAG {
     }
 
     /**
-     * Establece el nodo hacia el que va a evolucionar el ataque
-     *
-     * @param next nodo siguiente
-     */
-    public void setNext(String next, int position) {
-        nextNode = next;
-        try {
-            exportIndividualJSON(position);
-        } catch (Exception ex) {
-            Logger.getLogger(BAG.class.getName()).log(Level.SEVERE, null, ex);
-        }
-    }
-
-    /**
      * Elimina todos los nodos posteriores al dado, convirtiéndose este en el
      * actual
      *
@@ -299,7 +298,6 @@ public class BAG {
     public void deleteFrom(String node) {
 
         selectedNode = node;
-        nextNode = null;
 
         boolean deleteFlag = false;
 
@@ -349,39 +347,65 @@ public class BAG {
     /**
      * Exporta el grafo de un ataque a un fichero JSON
      *
-     * @param filePath ruta a fichero
+     * @param position ID del BAG
      */
     public void exportIndividualJSON(int position) throws FileNotFoundException, UnsupportedEncodingException {
         JSONGenerator jsonGen = new JSONGenerator();
-        String json = jsonGen.individualGenerator(bag, selectedNode, nextNode, phaseHistory, position);
+        String json = jsonGen.individualGenerator(bag, selectedNode, phaseHistory, markovNodes, position, probMarkov, done, attack);
         PrintWriter writer = new PrintWriter(props.getBagVisualizatorPathValue() + "/public/datos" + (position + 1) + ".json", "UTF-8");
         writer.println(json);
         writer.close();
     }
 
     /**
-     * Exporta el grafo completo a un fichero JSON
+     * Exporta el grafo combinado a un fichero JSON
      *
-     * @param filePath ruta a fichero
+     * @param bags distintos BAG
      */
     public void exportCompleteJSON(ArrayList<BAG> bags) throws FileNotFoundException, UnsupportedEncodingException {
         JSONGenerator jsonGen = new JSONGenerator();
         ArrayList<String> selectedNodes = new ArrayList<>();
-        ArrayList<String> nextNodes = new ArrayList<>();
         ArrayList<ArrayList<String>> phaseHistories = new ArrayList<>();
+        ArrayList<ArrayList<String>> markovNodes_ = new ArrayList<>();
+        ArrayList<Double> probsMarkov = new ArrayList<>();
+        ArrayList<Double> doneList = new ArrayList<>();
+        ArrayList<String> attacks = new ArrayList<>();
 
         for (BAG bagItem : bags) {
             if (!bagItem.isPhantom()) {
                 selectedNodes.add(bagItem.getPosition());
-                nextNodes.add(bagItem.getNext());
                 phaseHistories.add(bagItem.getHistory());
+                markovNodes_.add(bagItem.getMarkovNodes());
+                probsMarkov.add(bagItem.getProbMarkov());
+                doneList.add(bagItem.getDone());
+                attacks.add(bagItem.getAttack());
             }
         }
 
-        String json = jsonGen.totalGenerator(bag, selectedNodes, phaseHistories);
+        if (bags.isEmpty()) {
+            try {
+                BAG bag_ = new BAG();
+                bag_.importJSON(props.getJSONPathValue());
+                bag = bag_.getBag();
+            } catch (Exception ex) {
+                Logger.getLogger(BAG.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        }
+
+        String json = jsonGen.totalGenerator(bag, selectedNodes, markovNodes_, phaseHistories, probsMarkov, doneList, attacks);
+
         PrintWriter writer = new PrintWriter(props.getBagVisualizatorPathValue() + "/public/datos0.json", "UTF-8");
         writer.println(json);
         writer.close();
+    }
+
+    public static void exportCleanJSON() {
+        try {
+            BAG bag = new BAG();
+            bag.exportCompleteJSON(new ArrayList<BAG>());
+        } catch (FileNotFoundException | UnsupportedEncodingException ex) {
+            Logger.getLogger(BAG.class.getName()).log(Level.SEVERE, null, ex);
+        }
     }
 
     public static BAG clone(BAG originalBag) {
@@ -389,12 +413,18 @@ public class BAG {
         BAG newBag = new BAG();
         newBag.setBag(originalBag.getBag());
         newBag.setEventHistoryData(originalBag.getEventHistoryData());
-        newBag.setNextNode(originalBag.getNext());
+        newBag.setMarkovNodes(originalBag.getMarkovNodes());
         newBag.setSelectedNode(originalBag.getPosition());
         newBag.setPhaseHistory(new ArrayList<String>(originalBag.getPhaseHistory()));
 
         return newBag;
 
+    }
+
+    public void removeMarkov(ArrayList<String> markovNodes) {
+        if (this.markovNodes.equals(markovNodes)) {
+            this.markovNodes.clear();
+        }
     }
 
     /*
@@ -436,7 +466,27 @@ public class BAG {
         return currentTime;
     }
 
-    public void setNextNode(String nextNode) {
-        this.nextNode = nextNode;
+    public void setMarkovNodes(ArrayList<String> markovNodes) {
+        this.markovNodes = markovNodes;
+    }
+
+    public void setMarkovID(int markovID) {
+        this.markovID = markovID;
+    }
+
+    public int getMarkovID() {
+        return markovID;
+    }
+
+    public double getProbMarkov() {
+        return probMarkov;
+    }
+
+    public double getDone() {
+        return done;
+    }
+
+    public String getAttack() {
+        return attack;
     }
 }

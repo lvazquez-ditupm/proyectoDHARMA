@@ -16,7 +16,7 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import utils.PropsUtil;
+import utils.DharmaProperties;
 
 /**
  *
@@ -32,7 +32,7 @@ public class DataCataloger implements Runnable {
     public DataCataloger() {
     }
 
-    private static final PropsUtil props = new PropsUtil();
+    private static final DharmaProperties props = new DharmaProperties();
     List<File> directories = new ArrayList<>();
 
     public void run() {

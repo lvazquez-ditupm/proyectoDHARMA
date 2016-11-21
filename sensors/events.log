@@ -1,1 +1,7 @@
-Login malicioso
+Fri Nov 11 11:28:49 2016: SEC (Simple Event Correlator) 2.7.10
+Fri Nov 11 11:28:49 2016: Reading configuration from /home/saturno/DHARMA/sensors/SEC/sec.rules
+Fri Nov 11 11:28:49 2016: 34 rules loaded from /home/saturno/DHARMA/sensors/SEC/sec.rules
+Fri Nov 11 11:28:49 2016: No --bufsize command line option or --bufsize=0, setting --bufsize to 1
+Fri Nov 11 11:28:49 2016: Opening input file /home/saturno/DHARMA/sensors/SEC/asdf.log
+Fri Nov 11 11:28:49 2016: Opening input file /var/log/syslog
+Fri Nov 11 11:29:57 2016: SIGTERM received: shutting down SEC
