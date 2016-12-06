@@ -14,9 +14,9 @@ def tsusen():
 	(out, err) = ps.communicate()
 	if out.find("python tsusen.py") == -1:
 		shutil.copy(location+'/config_files/tsusen.conf', location+'/sensors/tsusen')
-		os.chdir(location+"/sensors/tsusen")
-		print 'Arrancando Tsusen'
-		subprocess.Popen('python tsusen.py', shell=True)
+	os.chdir(location+"/sensors/tsusen")
+	print 'Arrancando Tsusen'
+	subprocess.Popen('python tsusen.py', shell=True)
 	
 def social():
 	ps = subprocess.Popen('ps -ef | grep parsexcel.py', stdout=subprocess.PIPE, shell=True)
@@ -34,9 +34,9 @@ def nodeJS():
 		print 'Arrancando NodeJS'
 		subprocess.Popen('npm start', shell=True)
 
-SEC()
-tsusen()
-social()
+#SEC()
+#tsusen()
+#social()
 nodeJS()
 
 

@@ -59,7 +59,7 @@ public class SensorConfigurator implements Runnable {
         ScriptEngine engine = manager.getEngineByName("python");
         FileReader file = new FileReader(props.getDharmaPathValue() + "DHARMA/loadScript.py");
         engine.eval(file, context);
-        //System.out.println(writer.toString());  //Debug
+        System.out.println(writer.toString());  //Debug
     }
 
 }
