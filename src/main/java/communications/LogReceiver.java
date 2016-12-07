@@ -90,7 +90,7 @@ public class LogReceiver {
     class Receiver implements Runnable {
 
         ExecutorService exec;
-        SyslogCreator syslogCreator = new SyslogCreator();
+        //SyslogCreator syslogCreator = new SyslogCreator();
         Dharma dharma = new Dharma();
         MarkovController markovController;
 
@@ -110,7 +110,7 @@ public class LogReceiver {
                     } else if (receivedLog.contains("Finished attack")) {
                         markovController.delete(receivedLog);
                     } else {
-                        syslogCreator.put(receivedLog);
+                        //syslogCreator.put(receivedLog);
                     }
                 }
             } catch (Exception ex) {

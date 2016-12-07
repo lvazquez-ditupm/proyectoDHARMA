@@ -66,7 +66,7 @@ public class DharmaProperties {
             ACTIVE_PERIODS_VALUE = dharmaproperties.getProperty(ACTIVE_PERIODS_PROP);
             ANOMALY_THRESHOLD_VALUE = dharmaproperties.getProperty(ANOMALY_THRESHOLD_PROP);
             SYSLOG_PERIOD_VALUE = dharmaproperties.getProperty(SYSLOG_PERIOD_PROP);
-            validate();
+            
         } catch (IOException e) {
             throw new RuntimeException("Could not read config module config. (File: " + DHARMA_PROPERTIES_FILE + ")", e);
         } finally {
@@ -76,51 +76,6 @@ public class DharmaProperties {
                 } catch (IOException e) {
                 }
             }
-        }
-    }
-
-    private void validate() {
-        StringWriter swError = new StringWriter();
-        PrintWriter pwError = new PrintWriter(swError);
-        if (null == DHARMA_PATH_VALUE) {
-            System.out.println("File \"" + DHARMA_PATH_PROP
-                    + "\" not defined.");
-        }
-        if (null == BAG_VISUALIZATOR_PATH_VALUE) {
-            System.out.println("Property \"" + BAG_VISUALIZATOR_PATH_PROP
-                    + "\" not defined.");
-        }
-        if (null == JSON_PATH_VALUE) {
-            System.out.println("Property \"" + JSON_PATH_PROP
-                    + "\" not defined.");
-        }
-        if (null == EVENT_LOG_PATH_VALUE) {
-            System.out.println("Property \"" + EVENT_LOG_PATH_PROP
-                    + "\" not defined.");
-        }
-        if (null == DATASET_PATH_VALUE) {
-            System.out.println("Property \"" + DATASET_PATH_PROP
-                    + "\" not defined.");
-        }
-        if (null == DATASET_TIMESTAMPS_VALUE) {
-            System.out.println("Property \"" + DATASET_TIMESTAMPS_PROP
-                    + "\" not defined.");
-        }
-        if (null == TIMESTAMP_REF_VALUE) {
-            System.out.println("Property \"" + TIMESTAMP_REF_PROP
-                    + "\" not defined.");
-        }
-        if (null == ACTIVE_PERIODS_VALUE) {
-            System.out.println("Property \"" + ACTIVE_PERIODS_PROP
-                    + "\" not defined.");
-        }
-        if (null == ANOMALY_THRESHOLD_VALUE) {
-            System.out.println("Property \"" + ANOMALY_THRESHOLD_PROP
-                    + "\" not defined.");
-        }
-        if (null == SYSLOG_PERIOD_VALUE) {
-            System.out.println("Property \"" + SYSLOG_PERIOD_PROP
-                    + "\" not defined.");
         }
     }
 
