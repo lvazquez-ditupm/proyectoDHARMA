@@ -106,7 +106,7 @@
 
 	function firstScreen(show, done, attack){
 		if(show){
-			$("#attackinfo").html("Tipo de ataque: "+attack+"<br/>Porcentaje completado: "+done*100+"%");
+			$("#attackinfo").html("Tipo de ataque: "+attack+"<br/>Porcentaje completado: "+parseFloat(done*100).toPrecision(4)+"%");
 			$("#buttonEnd").show();
 			$("#anterior").show();
 		}else{
@@ -302,9 +302,9 @@
 				.attr({"r":20})
 				.style("fill",function(d,i){
 					if(d.status.match(currRegExp)){return currentColor}
-						else if(d.status.match(markovRegExp)){return markovColor}
-							else if(d.status.match(prevRegExp)){return previousColor}
-								else {return noneColor}})
+					else if(d.status.match(markovRegExp)){return markovColor}
+					else if(d.status.match(prevRegExp)){return previousColor}
+					else {return noneColor}})
 				.style("stroke","black")
 				.call(force.drag)
 				.attr("cx", function(d) { return d.x; })
@@ -439,50 +439,53 @@
 
 				nodes.on('mouseover', function(d) {          
 					tooltip.select('.route').html(function(){
-
+					
+						var txt = "";
+						var id = 0;
 						var htmlReturn = "";
+						
 						for(var k = 0; k<routesArray.length;k++){
 							if((routesArray[k].previousNodes[0].indexOf(d.title) != -1 ||
 								routesArray[k].currentNode.indexOf(d.title) != -1 ||
-								routesArray[k].markovNodes.indexOf(d.title) != -1 ) &&
-								routesArraySpecific.indexOf(d.title)==-1){
-
+								routesArray[k].markovNodes.indexOf(d.title) != -1 ) ){
+						
 								var _tempArray = [];
-							Array.prototype.push.apply(_tempArray,routesArray[k].previousNodes[0]);
-							Array.prototype.push.apply(_tempArray,routesArray[k].currentNode);
+								Array.prototype.push.apply(_tempArray,routesArray[k].previousNodes[0]);
+								Array.prototype.push.apply(_tempArray,routesArray[k].currentNode);
 
-							for (var i = 0; i < routesArray[k].markovNodes.length; i++){
-								_tempArray.push(routesArray[k].markovNodes[i]+"*");
-							}
-							_tempArray.push(routesArray[k].attack, routesArray[k].done);
-							routesArraySpecific = _tempArray;
-							_tempArray=[];
-						}	
-					}				
+								for (var i = 0; i < routesArray[k].markovNodes.length; i++){
+									_tempArray.push(routesArray[k].markovNodes[i]+"*");
+								}
+								_tempArray.push(routesArray[k].attack, routesArray[k].done);
+								routesArraySpecific = _tempArray;
 
-					var txt = "";
-					var id = 0;
+								done = routesArraySpecific.pop();
+								attack = routesArraySpecific.pop();
 
-					done = routesArraySpecific.pop();
-					attack = routesArraySpecific.pop();
+								for (var i = 0; i < routesArraySpecific.length; i++) {								
+									txt = txt+routesArraySpecific[i]+"-";
+								}	
 
-					for (var i = 0; i < routesArraySpecific.length; i++) {								
-						txt = txt+routesArraySpecific[i]+"-";
-					}	
+								for (var k = 0; k < a.routes.length; k++){
+									if(a.routes[k]==txt){
+										id = k+1;
+										break;
+									}
+								}
 
-					for (var k = 0; k < a.routes.length; k++){
-						if(a.routes[k]==txt){
-							id = k+1;
-							break;
-						}
-					}
+								txt = txt.slice(0,-1)
 
-					txt = txt.slice(0,-1)
+								if(htmlReturn!=""){
+									htmlReturn+="<div>------------</div>"
+								}
 
-					htmlReturn = htmlReturn+"<div onclick='linkTo("+id+")'><p>"+txt+"</p><p>"+attack+"</p><p>"+done*100+"% completado</p></div>";
-					txt="";
-					id=0;
+								htmlReturn = htmlReturn+"<div onclick='linkTo("+id+")'><p>"+txt+"</p><p>"+attack+"</p><p>"+parseFloat(done*100).toPrecision(4)+"% completado</p></div>";
+								txt="";
+								id=0;
 
+								_tempArray=[];
+							}	
+						}				
 
 					if(routesArraySpecific.length==0){
 						txtFlag=false;

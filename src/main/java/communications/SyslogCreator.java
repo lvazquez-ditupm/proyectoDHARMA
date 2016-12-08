@@ -1,6 +1,5 @@
 package communications;
 
-import control.MCCDcontroller;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -129,9 +128,6 @@ public class SyslogCreator {
      * @param event evento recibido
      */
     private void proceedIDS(HashMap<String, String> eventReceived) {
-        
-        MCCDcontroller mccd = new MCCDcontroller();
-        mccd.simulateHMM(eventReceived);
         
         /*String out = "IDSAnomaly: ";
         Iterator it = eventReceived.entrySet().iterator();

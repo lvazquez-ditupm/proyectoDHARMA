@@ -1,7 +1,6 @@
 package control;
 
 import communications.LogReceiver;
-import communications.SECEventReceiver;
 import core.BAG;
 
 /**
@@ -32,7 +31,7 @@ public class Main {
 		/// IDAtaque=\"1\";TipoAtaque=\"DDOS\";Nodos=\"D2,D3,A2,N2\";Estado=\"N2\";PEstado=\"0.3\";PFFinal=\"0.4\"");
 		///
 
-		logReceiver = new LogReceiver(6000, "192.168.10.100");
+		logReceiver = new LogReceiver(6000, "127.0.0.1");
 		logReceiver.start();
 
 	}
