@@ -6,9 +6,10 @@ exports.removeFile = function(req, res, next){
 	var message = new Buffer("Finished attack: id="+req.query.id+" queryID="+queryID+"");
 	var client = dgram.createSocket("udp4");
 	client.send(message, 0, message.length, 6000, "127.0.0.1", function(err) {
-		//console.log("Eliminar id="+req.query.id+" queryID="+queryID+"");
+		console.log("Eliminar id="+req.query.id+" queryID="+queryID+"");
 		client.close();
 	});
+	res.end();
 
 
 }

@@ -71,14 +71,14 @@ public class Dharma {
                     startNewBAG();
                     BAG bag = bagList.get(bagList.size() - 1);
                     bag.setMarkovID(markovID);
-                    bag.setPosition((String) eventMap.get("node"), bagList.indexOf(bag), bagList, markov, nodes, probMarkov, done, attack);
+                    bag.setPosition((String) eventMap.get("node"), markovID, bagList, markov, nodes, probMarkov, done, attack);
                     //doActions(bag, (String) eventMap.get("node"));
 
                 } else {
                     boolean flag = false;
                     for (BAG bag : bagList) {
                         if (bag.getMarkovID() == markovID) {
-                            bag.setPosition((String) eventMap.get("node"), bagList.indexOf(bag), bagList, markov, nodes, probMarkov, done, attack);
+                            bag.setPosition((String) eventMap.get("node"), markovID, bagList, markov, nodes, probMarkov, done, attack);
                             //doActions(bag, (String) eventMap.get("node"));
                             flag = true;
                             break;
@@ -88,7 +88,7 @@ public class Dharma {
                         startNewBAG();
                         BAG bag = bagList.get(bagList.size() - 1);
                         bag.setMarkovID(markovID);
-                        bag.setPosition((String) eventMap.get("node"), bagList.indexOf(bag), bagList, markov, nodes, probMarkov, done, attack);
+                        bag.setPosition((String) eventMap.get("node"), markovID, bagList, markov, nodes, probMarkov, done, attack);
                         //doActions(bag, (String) eventMap.get("node"));
                     }
                 }
@@ -261,11 +261,14 @@ public class Dharma {
         File folder = new File(props.getBagVisualizatorPathValue() + "/public");
         File[] files = folder.listFiles();
         ArrayList<BAG> visibleBagList = new ArrayList<>();
+        ArrayList<Integer> existingGraphs = new ArrayList<>();
         String nombre;
         int id;
 
+        existingGraphs.add(0);
         for (BAG bag : bagList) {
             if (!bag.isPhantom()) {
+            	existingGraphs.add(bag.getMarkovID());
                 visibleBagList.add(bag);
             } else {
                 break;
@@ -276,7 +279,7 @@ public class Dharma {
             for (File f : files) {
                 nombre = f.getName();
                 id = Integer.parseInt(nombre.substring(nombre.indexOf("datos") + 5, nombre.indexOf(".json")));
-                if (id > visibleBagList.size()) {
+                if (!existingGraphs.contains(id)) {
                     f.delete();
                 }
             }
@@ -320,13 +323,13 @@ public class Dharma {
     public void removeBAG(int id) {
         try {
             for (BAG bag : bagList) {
-                if (bagList.indexOf(bag) + 1 == id) {
+                if (bag.getMarkovID() == id) {
                     bagList.remove(bag);
                     break;
                 }
             }
             for (BAG bag : bagList) {
-                bag.exportIndividualJSON(id - 1);
+                bag.exportIndividualJSON(bag.getMarkovID());
             }
 
             if (bagList.isEmpty()) {

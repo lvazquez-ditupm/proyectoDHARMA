@@ -56,8 +56,11 @@
 	noneColor="#bfbfbf";
 	//
 
+	var ids = [];
 	var jsonID = 0,
 	numberGraphs = 0;
+
+	var flag = true;
 
 	var prevJSON = null,
 	currJSON = null;
@@ -75,8 +78,11 @@
 	map_init();
 
 	function siguiente(){
-		if(jsonID < numberGraphs){
-			jsonID+=1;
+		if(ids.length>0 && jsonID==0){
+			jsonID=ids[0];
+		}
+		else if(ids.length>0 && jsonID != ids[ids.length-1]){
+			jsonID=ids[ids.indexOf(jsonID)+1];
 		}else{
 			$("#siguiente").hide();
 		}
@@ -88,8 +94,12 @@
 	}
 
 	function anterior(){
-		if(jsonID > 0){
-			jsonID-=1;
+		if(jsonID==ids[0]){
+			jsonID=0;
+			$("#siguiente").show();
+		}
+		else {
+			jsonID=ids[ids.indexOf(jsonID)-1];
 		}
 	}
 
@@ -100,7 +110,6 @@
 
 	function endAttack(){
 		$.get("/delete", {id:jsonID});
-		numberGraphs--;
 		todos();
 	}
 
@@ -150,6 +159,22 @@
 
 		d3.json("/datos"+jsonID+".json", function(a){
 
+			if(typeof a.ids !== "undefined" && a.ids!==null){
+				ids = a.ids;
+				if(a.ids.length < numberGraphs){
+					numberGraphs = a.ids.length;
+				}
+			}
+
+			if(a.routes.length==0){
+				numberGraphs=0;
+			}
+
+			if(flag){
+				numberGraphs=a.ids.length;
+				flag=false;
+			}
+
 			if(jsonID==0){
 				firstScreen(false);
 			}else{
@@ -196,8 +221,17 @@
 				markovNodes = [];
 			}
 
-			if (a.routes.length > numberGraphs) {
-				numberGraphs = a.routes.length;
+			if (ids.length > numberGraphs) {	
+				str="Posible(s) nuevo(s) ataque(s): ";
+				for(i=0; i<a.routes.length-numberGraphs;i++){
+					str=str+"\n*  "+a.attack[i];
+				}
+				str=str+"\nPulse \"Aceptar\" para ir a la vista de ataque";
+				if (confirm(str)){
+						window.location.replace("http://google.com");
+				};
+				
+				numberGraphs = ids.length;
 			}
 
 			var dataset = {nodes: nodesArray, edges: edgesArray}
@@ -468,7 +502,7 @@
 
 								for (var k = 0; k < a.routes.length; k++){
 									if(a.routes[k]==txt){
-										id = k+1;
+										id = ids[k];
 										break;
 									}
 								}

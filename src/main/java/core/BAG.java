@@ -387,7 +387,7 @@ public class BAG {
 		String json = jsonGen.individualGenerator(bag, selectedNode, phaseHistory, markovNodes, position, probMarkov,
 				done, attack);
 		PrintWriter writer = new PrintWriter(
-				props.getBagVisualizatorPathValue() + "/public/datos" + (position + 1) + ".json", "UTF-8");
+				props.getBagVisualizatorPathValue() + "/public/datos" +position+ ".json", "UTF-8");
 		writer.println(json);
 		writer.close();
 	}
@@ -406,7 +406,8 @@ public class BAG {
 		ArrayList<Double> probsMarkov = new ArrayList<>();
 		ArrayList<Double> doneList = new ArrayList<>();
 		ArrayList<String> attacks = new ArrayList<>();
-
+		ArrayList<Integer> ids = new ArrayList<>();
+		
 		for (BAG bagItem : bags) {
 			if (!bagItem.isPhantom()) {
 				selectedNodes.add(bagItem.getPosition());
@@ -415,6 +416,7 @@ public class BAG {
 				probsMarkov.add(bagItem.getProbMarkov());
 				doneList.add(bagItem.getDone());
 				attacks.add(bagItem.getAttack());
+				ids.add(bagItem.getMarkovID());
 			}
 		}
 
@@ -429,7 +431,7 @@ public class BAG {
 		}
 
 		String json = jsonGen.totalGenerator(bag, selectedNodes, markovNodes_, phaseHistories, probsMarkov, doneList,
-				attacks);
+				attacks, ids);
 
 		PrintWriter writer = new PrintWriter(props.getBagVisualizatorPathValue() + "/public/datos0.json", "UTF-8");
 		writer.println(json);

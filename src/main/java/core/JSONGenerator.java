@@ -156,7 +156,7 @@ public class JSONGenerator {
 	public String totalGenerator(ListenableDirectedWeightedGraph<String, DefaultEdge> bag,
 			ArrayList<String> selectedNodes, ArrayList<ArrayList<String>> nextNodes,
 			ArrayList<ArrayList<String>> phaseHistories, ArrayList<Double> probsMarkov, ArrayList<Double> doneList,
-			ArrayList<String> attacks) {
+			ArrayList<String> attacks, ArrayList<Integer> ids) {
 
 		Gson gson = new Gson();
 
@@ -167,7 +167,7 @@ public class JSONGenerator {
 		ArrayList<HashMap> edgesList = new ArrayList<>();
 		ArrayList<HashMap> nodesList = new ArrayList<>();
 		LinkedHashSet historyList = new LinkedHashSet();
-
+		
 		String pathString;
 
 		HashMap<String, ArrayList> jsonMap = new HashMap<>();
@@ -202,7 +202,7 @@ public class JSONGenerator {
 				} else if (nodeMap.get("status").toString().contains("current") && node.equals(selectedNodes.get(k))) {
 					String oldValue_ = nodeMap.get("status").toString();
 					Double oldValue = Double.parseDouble(oldValue_.substring(oldValue_.indexOf("t") + 1));
-					nodeMap.put("status", "current" + oldValue + "<br/>" + probsMarkov.get(k));
+					nodeMap.put("status", "current" + oldValue + "/" + probsMarkov.get(k));
 					nodesList.add(nodeMap);
 				} else if (nodeMap.get("status").toString() == "markov" && (node.equals(selectedNodes.get(k)))) {
 					nodeMap.put("status", "current" + probsMarkov.get(k));
@@ -268,7 +268,7 @@ public class JSONGenerator {
 		jsonMap.put("routes", _historyList);
 		jsonMap.put("done", doneList);
 		jsonMap.put("attack", attacks);
-
+		jsonMap.put("ids", ids);
 		return gson.toJson(jsonMap);
 	}
 }
