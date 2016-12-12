@@ -41,19 +41,21 @@ public class MarkovController {
 		data = new HashMap<>();
 		nodes = new ArrayList<>();
 
-		markovLog = markovLog.substring(5).replace("\"", "");
+		markovLog = markovLog.replace("\"", "");
 		String[] markovLogArray = markovLog.split(";");
 
 		markovID = Integer.parseInt(markovLogArray[0].substring(markovLogArray[0].indexOf("=") + 1));
 		attack = markovLogArray[1].substring(markovLogArray[1].indexOf("=") + 1);
 		String[] nodesArray = markovLogArray[2]
-				.substring(markovLogArray[2].indexOf("=") + 2, markovLogArray[2].indexOf(")")).split(",");
+				.substring(markovLogArray[2].indexOf("=") + 1).split(",");
 		for (String nodeItem : nodesArray) {
 			nodes.add(nodeItem);
 		}
 		node = markovLogArray[3].substring(markovLogArray[3].indexOf("=") + 1);
 		probMarkov = Double.parseDouble(markovLogArray[4].substring(markovLogArray[4].indexOf("=") + 1));
+		probMarkov=(double) Math.round(probMarkov*100)/100;
 		done = Double.parseDouble(markovLogArray[5].substring(markovLogArray[5].indexOf("=") + 1));
+		done = (double) Math.round(done*100)/100;
 
 		data.put("nodes", nodes);
 		data.put("node", node);

@@ -105,12 +105,10 @@ public class LogReceiver {
                 while (true) {
                     String receivedLog = getAlert();
                     System.out.println(receivedLog);
-                    if (receivedLog.contains("HMM")) {
-                        markovController.parse(receivedLog);
-                    } else if (receivedLog.contains("Finished attack")) {
+                    if (receivedLog.contains("Finished attack")) {
                         markovController.delete(receivedLog);
                     } else {
-                        //syslogCreator.put(receivedLog);
+                    	markovController.parse(receivedLog);
                     }
                 }
             } catch (Exception ex) {
