@@ -37,7 +37,7 @@ public class LogReceiver {
 
     public void start() {
 
-        System.out.println("****  Arrancando receptor de logs de AIRS externos  ****");
+        System.out.println("****  Arrancando receptor de logs de HMM  ****");
 
         Receiver r = new Receiver();
         ReceiveSocketUDPAlert u = new ReceiveSocketUDPAlert();

@@ -17,7 +17,7 @@ public class Main {
 
 		BAG.exportCleanJSON();
 
-		logReceiver = new LogReceiver(6000, "127.0.0.1");
+		logReceiver = new LogReceiver(Integer.parseInt(args[1]), args[0]);
 		logReceiver.start();
 
 	}
