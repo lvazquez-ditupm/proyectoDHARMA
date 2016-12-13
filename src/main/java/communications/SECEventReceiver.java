@@ -42,7 +42,7 @@ public class SECEventReceiver implements Runnable {
                             HashMap<String, Object> nodeData = new HashMap<>();
                             nodeData.put("node", str);
                             if (!nodeData.isEmpty()) {
-                                dharma.processEvent(nodeData, null, false, -1, -1, -1, "");
+                                dharma.processEvent(nodeData, null, false, -1, -1, -1, -1, "");
                             }
 
                         }

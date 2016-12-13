@@ -32,6 +32,7 @@ public class BAG {
 	private String selectedNode;
 	private double probMarkov;
 	private double done;
+	private double risk;
 	private String attack;
 	private ArrayList<String> phaseHistory;
 	private ArrayList<HashMap<String, String>> eventHistoryData;
@@ -113,7 +114,7 @@ public class BAG {
 	 *            nodo a establecer la posición
 	 */
 	public void setPosition(String node, int position, ArrayList<BAG> bags, boolean markov, ArrayList<String> nodes,
-			double probMarkov, double done, String attack) throws Exception {
+			double probMarkov, double done, double risk, String attack) throws Exception {
 		if (!bag.containsVertex(node)) {
 			throw new Exception("Nodo no existente en la red bayesiana");
 		}
@@ -123,6 +124,7 @@ public class BAG {
 			this.probMarkov = probMarkov;
 			this.done = done;
 			this.attack = attack;
+			this.risk=risk;
 		}
 		selectedNode = node;
 		phaseHistory.add(selectedNode);
@@ -385,7 +387,7 @@ public class BAG {
 	public void exportIndividualJSON(int position) throws FileNotFoundException, UnsupportedEncodingException {
 		JSONGenerator jsonGen = new JSONGenerator();
 		String json = jsonGen.individualGenerator(bag, selectedNode, phaseHistory, markovNodes, position, probMarkov,
-				done, attack);
+				done, risk, attack);
 		PrintWriter writer = new PrintWriter(
 				props.getBagVisualizatorPathValue() + "/public/datos" +position+ ".json", "UTF-8");
 		writer.println(json);
@@ -525,6 +527,10 @@ public class BAG {
 		return done;
 	}
 
+	public double getRisk(){
+		return risk;
+	}
+	
 	public String getAttack() {
 		return attack;
 	}
