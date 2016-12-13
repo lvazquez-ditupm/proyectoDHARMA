@@ -35,7 +35,7 @@ public class JSONGenerator {
      * @param attack tipo de ataque
      * @return string JSON
      */
-    public String individualGenerator(ListenableDirectedWeightedGraph<String, DefaultEdge> bag, String selectedNode, ArrayList<String> phaseHistory, ArrayList<String> markovNodes, int position, double probMarkov, double done, String attack) {
+    public String individualGenerator(ListenableDirectedWeightedGraph<String, DefaultEdge> bag, String selectedNode, ArrayList<String> phaseHistory, ArrayList<String> markovNodes, int position, double probMarkov, double done, double risk, String attack) {
 
         Gson gson = new Gson();
 
@@ -117,6 +117,7 @@ public class JSONGenerator {
         jsonMap.put("routes", pathList);
         jsonMap.put("attackID", position + 1);
         jsonMap.put("done", done);
+        jsonMap.put("risk", risk);
         jsonMap.put("attack", attack);
 
         return gson.toJson(jsonMap);

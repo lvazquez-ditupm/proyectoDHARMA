@@ -19,6 +19,7 @@ public class MarkovController {
     private int markovID;
     private double probMarkov;
     private double done;
+    private double risk;
     private String attack;
     private ArrayList<String> nodes;
     private String node;
@@ -50,6 +51,7 @@ public class MarkovController {
         node = markovLogArray[3].substring(markovLogArray[3].indexOf("=") + 1);
         probMarkov = Double.parseDouble(markovLogArray[4].substring(markovLogArray[4].indexOf("=") + 1));
         done = Double.parseDouble(markovLogArray[5].substring(markovLogArray[5].indexOf("=") + 1));
+        risk = Double.parseDouble(markovLogArray[6].substring(markovLogArray[6].indexOf("=") + 1));
 
         data.put("nodes", nodes);
         data.put("node", node);
@@ -62,7 +64,7 @@ public class MarkovController {
                     flag = false;
                 }
                 markovMap.put("node", nodesArray[i]);
-                dharma.processEvent(markovMap, nodes, true, markovID, probMarkov, done, attack);
+                dharma.processEvent(markovMap, nodes, true, markovID, probMarkov, done, risk, attack);
                 i++;
             }
             chainMap.put(markovID, data);
@@ -84,7 +86,7 @@ public class MarkovController {
                     flag = false;
                 }
                 markovMap.put("node", nodesArray[i]);
-                dharma.processEvent(markovMap, nodes, true, markovID, probMarkov, done, attack);
+                dharma.processEvent(markovMap, nodes, true, markovID, probMarkov, done, risk, attack);
                 i++;
             }
             chainMap.put(markovID, data);
