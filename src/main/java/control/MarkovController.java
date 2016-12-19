@@ -50,9 +50,12 @@ public class MarkovController {
         }
         node = markovLogArray[3].substring(markovLogArray[3].indexOf("=") + 1);
         probMarkov = Double.parseDouble(markovLogArray[4].substring(markovLogArray[4].indexOf("=") + 1));
+        probMarkov=Math.round(probMarkov*100)/100d;
         done = Double.parseDouble(markovLogArray[5].substring(markovLogArray[5].indexOf("=") + 1));
+        done=Math.round(done*10000)/10000d;
         risk = Double.parseDouble(markovLogArray[6].substring(markovLogArray[6].indexOf("=") + 1));
-
+        risk=Math.round(risk*100)/100d;
+        
         data.put("nodes", nodes);
         data.put("node", node);
 

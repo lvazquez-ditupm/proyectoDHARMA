@@ -221,9 +221,14 @@
 				markovNodes = [];
 			}
 
+			console.log(ids.length)
+			console.log(numberGraphs)
+
 			if (ids.length > numberGraphs) {	
 				str="Posible(s) nuevo(s) ataque(s): ";
-				for(i=0; i<a.routes.length-numberGraphs;i++){
+				console.log("asdfasdfasdfasdfasdf")
+				for(i=ids.length-1; i>=numberGraphs;i--){
+					console.log(a.attack[i])
 					str=str+"\n*  "+a.attack[i];
 				}
 				str=str+"\nPulse \"Aceptar\" para ir a la vista de ataque";
