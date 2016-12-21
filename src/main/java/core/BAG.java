@@ -124,10 +124,12 @@ public class BAG {
 			this.probMarkov = probMarkov;
 			this.done = done;
 			this.attack = attack;
-			this.risk=risk;
+			this.risk = risk;
 		}
 		selectedNode = node;
-		phaseHistory.add(selectedNode);
+		if (!phaseHistory.contains(selectedNode)) {
+			phaseHistory.add(selectedNode);
+		}
 		currentTime = Calendar.getInstance();
 
 		boolean flag = false;
@@ -388,8 +390,8 @@ public class BAG {
 		JSONGenerator jsonGen = new JSONGenerator();
 		String json = jsonGen.individualGenerator(bag, selectedNode, phaseHistory, markovNodes, position, probMarkov,
 				done, risk, attack);
-		PrintWriter writer = new PrintWriter(
-				props.getBagVisualizatorPathValue() + "/public/datos" +position+ ".json", "UTF-8");
+		PrintWriter writer = new PrintWriter(props.getBagVisualizatorPathValue() + "/public/datos" + position + ".json",
+				"UTF-8");
 		writer.println(json);
 		writer.close();
 	}
@@ -409,7 +411,7 @@ public class BAG {
 		ArrayList<Double> doneList = new ArrayList<>();
 		ArrayList<String> attacks = new ArrayList<>();
 		ArrayList<Integer> ids = new ArrayList<>();
-		
+
 		for (BAG bagItem : bags) {
 			if (!bagItem.isPhantom()) {
 				selectedNodes.add(bagItem.getPosition());
@@ -434,7 +436,6 @@ public class BAG {
 
 		String json = jsonGen.totalGenerator(bag, selectedNodes, markovNodes_, phaseHistories, probsMarkov, doneList,
 				attacks, ids);
-
 		PrintWriter writer = new PrintWriter(props.getBagVisualizatorPathValue() + "/public/datos0.json", "UTF-8");
 		writer.println(json);
 		writer.close();
@@ -527,10 +528,10 @@ public class BAG {
 		return done;
 	}
 
-	public double getRisk(){
+	public double getRisk() {
 		return risk;
 	}
-	
+
 	public String getAttack() {
 		return attack;
 	}

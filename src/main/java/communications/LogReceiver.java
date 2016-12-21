@@ -132,7 +132,6 @@ public class LogReceiver {
                     DatagramPacket packet = new DatagramPacket(buf, buf.length);
                     socketUDP.receive(packet);
                     String log = new String(packet.getData(), packet.getOffset(), packet.getLength());
-
                     if (!log.equals("")) {
                         putAlert(log);
                     }
