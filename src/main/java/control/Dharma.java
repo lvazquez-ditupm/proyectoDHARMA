@@ -61,7 +61,7 @@ public class Dharma {
      * @param done
      * @param attack
      */
-    public void processEvent(HashMap<String, Object> eventMap, ArrayList<String> nodes, boolean markov, int markovID, double probMarkov, double done, double risk, String attack) {
+    public void processEvent(HashMap<String, Object> eventMap, ArrayList<String> nodes, boolean markov, int markovID, double probMarkov, double done, HashMap<String, Object> infoAtt, String attack) {
 
         ArrayList<BAG> bagChangeList = getChangeList((String) eventMap.get("node"));
 
@@ -71,14 +71,14 @@ public class Dharma {
                     startNewBAG();
                     BAG bag = bagList.get(bagList.size() - 1);
                     bag.setMarkovID(markovID);
-                    bag.setPosition((String) eventMap.get("node"), markovID, bagList, markov, nodes, probMarkov, done, risk, attack);
+                    bag.setPosition((String) eventMap.get("node"), markovID, bagList, markov, nodes, probMarkov, done, infoAtt, attack);
                     //doActions(bag, (String) eventMap.get("node"));
 
                 } else {
                     boolean flag = false;
                     for (BAG bag : bagList) {
                         if (bag.getMarkovID() == markovID) {
-                            bag.setPosition((String) eventMap.get("node"), markovID, bagList, markov, nodes, probMarkov, done, risk, attack);
+                            bag.setPosition((String) eventMap.get("node"), markovID, bagList, markov, nodes, probMarkov, done, infoAtt, attack);
                             //doActions(bag, (String) eventMap.get("node"));
                             flag = true;
                             break;
@@ -88,7 +88,7 @@ public class Dharma {
                         startNewBAG();
                         BAG bag = bagList.get(bagList.size() - 1);
                         bag.setMarkovID(markovID);
-                        bag.setPosition((String) eventMap.get("node"), markovID, bagList, markov, nodes, probMarkov, done, risk, attack);
+                        bag.setPosition((String) eventMap.get("node"), markovID, bagList, markov, nodes, probMarkov, done, infoAtt, attack);
                         //doActions(bag, (String) eventMap.get("node"));
                     }
                 }
@@ -190,7 +190,6 @@ public class Dharma {
         String nextNode = original.getLastNode();
 
         bagList.remove(original);
-        undoActions(original, nextNode);
         bag.setReal();
 
         ArrayList<BAG> candidates = getChangeList(nextNode);
@@ -201,8 +200,7 @@ public class Dharma {
         //bag.setPosition(eventString, bagList.indexOf(bag), bagList);
         if (repairedBAG != null) {
             try {
-                repairedBAG.setPosition(nextNode, bagList.indexOf(repairedBAG), bagList, false, repairedBAG.getMarkovNodes(), repairedBAG.getProbMarkov(), repairedBAG.getDone(), repairedBAG.getRisk(), repairedBAG.getAttack());
-                doActions(repairedBAG, nextNode);
+                repairedBAG.setPosition(nextNode, bagList.indexOf(repairedBAG), bagList, false, repairedBAG.getMarkovNodes(), repairedBAG.getProbMarkov(), repairedBAG.getDone(), repairedBAG.getinfoAtt(), repairedBAG.getAttack());
             } catch (Exception ex) {
                 Logger.getLogger(Dharma.class.getName()).log(Level.SEVERE, null, ex);
             }
@@ -257,7 +255,7 @@ public class Dharma {
     /**
      * Elimina los ficheros JSON de grafos eliminados
      */
-    private void deleteFolder() {
+    public static void deleteFolder() {
         File folder = new File(props.getBagVisualizatorPathValue() + "/public");
         File[] files = folder.listFiles();
         ArrayList<BAG> visibleBagList = new ArrayList<>();
@@ -323,6 +321,8 @@ public class Dharma {
     public void removeBAG(int id) {
         try {
             for (BAG bag : bagList) {
+            	//System.out.println(bag.getMarkovID());
+            	//System.out.println(id);
                 if (bag.getMarkovID() == id) {
                     bagList.remove(bag);
                     break;
@@ -345,27 +345,7 @@ public class Dharma {
         }
     }
 
-    /**
-     * Ejecuta las acciones relacionadas con el nodo
-     *
-     * @param bag
-     * @param node
-     */
-    public void doActions(BAG bag, String node) {
-        ActionController.doActions(bag, node);
-    }
-
-    /**
-     * Ante una corrección del grafo, deshace las acciones del nodo y BAG
-     * seleccionados
-     *
-     * @param bag
-     * @param node
-     */
-    public void undoActions(BAG bag, String node) {
-        ActionController.undoActions(bag, node);
-    }
-
+   
     /**
      * Correla los datos de los eventos pasados para inferir el BAG que avanza
      *

@@ -16,6 +16,8 @@ import java.util.HashSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.jgrapht.graph.*;
+
+import control.Dharma;
 import utils.DharmaProperties;
 
 /**
@@ -32,7 +34,7 @@ public class BAG {
 	private String selectedNode;
 	private double probMarkov;
 	private double done;
-	private double risk;
+	private HashMap<String, Object> infoAtt;
 	private String attack;
 	private ArrayList<String> phaseHistory;
 	private ArrayList<HashMap<String, String>> eventHistoryData;
@@ -114,27 +116,35 @@ public class BAG {
 	 *            nodo a establecer la posición
 	 */
 	public void setPosition(String node, int position, ArrayList<BAG> bags, boolean markov, ArrayList<String> nodes,
-			double probMarkov, double done, double risk, String attack) throws Exception {
+			double probMarkov, double done, HashMap<String, Object> infoAtt, String attack) throws Exception {
 		if (!bag.containsVertex(node)) {
 			throw new Exception("Nodo no existente en la red bayesiana");
 		}
 
 		if (markov) {
+			this.phaseHistory = new ArrayList<>();
 			this.markovNodes.clear();
 			this.probMarkov = probMarkov;
 			this.done = done;
 			this.attack = attack;
-			this.risk = risk;
+			this.infoAtt = infoAtt;
 		}
 		selectedNode = node;
-		if (!phaseHistory.contains(selectedNode)) {
-			phaseHistory.add(selectedNode);
+
+		Iterator<String> it = nodes.iterator();
+		while (it.hasNext()) {
+			String item = it.next();
+			this.phaseHistory.add(item);
+			if (item.equals(node)) {
+				break;
+			}
 		}
+
 		currentTime = Calendar.getInstance();
 
 		boolean flag = false;
 
-		Iterator<String> it = nodes.iterator();
+		it = nodes.iterator();
 		while (it.hasNext()) {
 			String item = it.next();
 			if (flag) {
@@ -389,7 +399,7 @@ public class BAG {
 	public void exportIndividualJSON(int position) throws FileNotFoundException, UnsupportedEncodingException {
 		JSONGenerator jsonGen = new JSONGenerator();
 		String json = jsonGen.individualGenerator(bag, selectedNode, phaseHistory, markovNodes, position, probMarkov,
-				done, risk, attack);
+				done, infoAtt, attack);
 		PrintWriter writer = new PrintWriter(props.getBagVisualizatorPathValue() + "/public/datos" + position + ".json",
 				"UTF-8");
 		writer.println(json);
@@ -444,6 +454,7 @@ public class BAG {
 	public static void exportCleanJSON() {
 		try {
 			BAG bag = new BAG();
+			Dharma.deleteFolder();
 			bag.exportCompleteJSON(new ArrayList<BAG>());
 		} catch (FileNotFoundException | UnsupportedEncodingException ex) {
 			Logger.getLogger(BAG.class.getName()).log(Level.SEVERE, null, ex);
@@ -528,8 +539,8 @@ public class BAG {
 		return done;
 	}
 
-	public double getRisk() {
-		return risk;
+	public HashMap<String, Object> getinfoAtt() {
+		return infoAtt;
 	}
 
 	public String getAttack() {

@@ -44,7 +44,7 @@ public class JSONGenerator {
 	 * @return string JSON
 	 */
 	public String individualGenerator(ListenableDirectedWeightedGraph<String, DefaultEdge> bag, String selectedNode,
-			ArrayList<String> phaseHistory, ArrayList<String> markovNodes, int position, double probMarkov, double done, double risk,
+			ArrayList<String> phaseHistory, ArrayList<String> markovNodes, int position, double probMarkov, double done, HashMap<String, Object> infoAtt,
 			String attack) {
 
 		Gson gson = new Gson();
@@ -126,9 +126,11 @@ public class JSONGenerator {
 		jsonMap.put("nodes", nodesList);
 		jsonMap.put("edges", edgesList);
 		jsonMap.put("routes", pathList);
-		jsonMap.put("attackID", position + 1);
+		jsonMap.put("attackID", position);
 		jsonMap.put("done", done);
-		jsonMap.put("risk", risk);
+		for (String infoAttKey : infoAtt.keySet()){
+			jsonMap.put(infoAttKey, infoAtt.get(infoAttKey));
+		}
 		jsonMap.put("attack", attack);
 
 		return gson.toJson(jsonMap);
@@ -158,7 +160,7 @@ public class JSONGenerator {
 			ArrayList<String> selectedNodes, ArrayList<ArrayList<String>> nextNodes,
 			ArrayList<ArrayList<String>> phaseHistories, ArrayList<Double> probsMarkov, ArrayList<Double> doneList,
 			ArrayList<String> attacks, ArrayList<Integer> ids) {
-
+		
 		Gson gson = new Gson();
 
 		Set<String> nodes = bag.vertexSet();
@@ -184,10 +186,6 @@ public class JSONGenerator {
 			nodeMap.put("id", i);
 			nodeMap.put("title", node);
 
-			if (node.equals("A2")) {
-				System.out.println("");
-			}
-
 			for (int k = 0; k < selectedNodes.size(); k++) {
 				if (nodeMap.get("status") == null) {
 					if (node.equals(selectedNodes.get(k))) {
@@ -202,7 +200,7 @@ public class JSONGenerator {
 					}
 				} else if (nodeMap.get("status").toString().contains("current") && node.equals(selectedNodes.get(k))) {
 					String oldValue_ = nodeMap.get("status").toString();
-					Double oldValue = Double.parseDouble(oldValue_.substring(oldValue_.indexOf("t") + 1));
+					String oldValue = oldValue_.substring(oldValue_.indexOf("t") + 1);
 					nodeMap.put("status", "current" + oldValue + "/" + probsMarkov.get(k));
 					nodesList.add(nodeMap);
 				} else if (nodeMap.get("status").toString() == "markov" && (node.equals(selectedNodes.get(k)))) {
