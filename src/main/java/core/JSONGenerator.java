@@ -98,7 +98,6 @@ public class JSONGenerator {
 			for (String nextCandidate : nodes) {
 
 				if (bag.containsEdge(node, nextCandidate)) {
-					DefaultWeightedEdge e = (DefaultWeightedEdge) bag.getEdge(node, nextCandidate);
 					edgeMap = new HashMap<>();
 					edgeMap.put("source", i);
 					edgeMap.put("target", j);

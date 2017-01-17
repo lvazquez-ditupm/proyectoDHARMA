@@ -4,14 +4,12 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
-import java.util.Set;
 import java.io.BufferedReader;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.UnsupportedEncodingException;
-import java.util.Calendar;
 import java.util.HashSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -30,19 +28,14 @@ import utils.DharmaProperties;
 public class BAG {
 
 	private ListenableDirectedWeightedGraph<String, DefaultEdge> bag;
-	private Boolean phantom;
 	private String selectedNode;
 	private double probMarkov;
 	private double done;
 	private HashMap<String, Object> infoAtt;
 	private String attack;
 	private ArrayList<String> phaseHistory;
-	private ArrayList<HashMap<String, String>> eventHistoryData;
 	private ArrayList<String> markovNodes;
 	private int markovID;
-	private Calendar startTime;
-	private Calendar currentTime;
-	private BAG link;
 	private final DharmaProperties props = new DharmaProperties();
 
 	/**
@@ -51,11 +44,7 @@ public class BAG {
 	 */
 	public BAG() {
 		phaseHistory = new ArrayList<>();
-		eventHistoryData = new ArrayList<>();
 		markovNodes = new ArrayList<>();
-		startTime = Calendar.getInstance();
-		currentTime = startTime;
-		phantom = false;
 		bag = new ListenableDirectedWeightedGraph<>(DefaultWeightedEdge.class);
 	}
 
@@ -96,39 +85,24 @@ public class BAG {
 	}
 
 	/**
-	 * Cambia el peso de un enlace
-	 *
-	 * @param origin
-	 *            Nodo origen
-	 * @param destination
-	 *            Nodo destino
-	 * @param weight
-	 *            Nuevo peso
-	 */
-	public void changeWeigths(String origin, String destination, double weight) {
-		bag.setEdgeWeight(bag.getEdge(origin, destination), weight);
-	}
-
-	/**
 	 * Establece la posición en el grafo
 	 *
 	 * @param node
 	 *            nodo a establecer la posición
 	 */
-	public void setPosition(String node, int position, ArrayList<BAG> bags, boolean markov, ArrayList<String> nodes,
-			double probMarkov, double done, HashMap<String, Object> infoAtt, String attack) throws Exception {
+	public void setPosition(String node, int position, ArrayList<BAG> bags, ArrayList<String> nodes, double probMarkov,
+			double done, HashMap<String, Object> infoAtt, String attack) throws Exception {
 		if (!bag.containsVertex(node)) {
 			throw new Exception("Nodo no existente en la red bayesiana");
 		}
 
-		if (markov) {
-			this.phaseHistory = new ArrayList<>();
-			this.markovNodes.clear();
-			this.probMarkov = probMarkov;
-			this.done = done;
-			this.attack = attack;
-			this.infoAtt = infoAtt;
-		}
+		this.phaseHistory = new ArrayList<>();
+		this.markovNodes.clear();
+		this.probMarkov = probMarkov;
+		this.done = done;
+		this.attack = attack;
+		this.infoAtt = infoAtt;
+
 		selectedNode = node;
 
 		Iterator<String> it = nodes.iterator();
@@ -139,8 +113,6 @@ public class BAG {
 				break;
 			}
 		}
-
-		currentTime = Calendar.getInstance();
 
 		boolean flag = false;
 
@@ -157,73 +129,13 @@ public class BAG {
 		}
 
 		try {
-			if (!this.isPhantom()) {
-				exportIndividualJSON(position);
-				exportCompleteJSON(bags);
-			}
+
+			exportIndividualJSON(position);
+			exportCompleteJSON(bags);
+
 		} catch (Exception ex) {
 			Logger.getLogger(BAG.class.getName()).log(Level.SEVERE, null, ex);
 		}
-	}
-
-	/**
-	 * Establece el BAG como oculto
-	 */
-	public void setPhantom(BAG bagLink) {
-		phantom = true;
-		link = bagLink;
-	}
-
-	/**
-	 * Establece el BAG como visible
-	 */
-	public void setReal() {
-		phantom = false;
-		link = null;
-	}
-
-	/**
-	 * Devuelve true si la red está oculta
-	 */
-	public boolean isPhantom() {
-		return phantom;
-	}
-
-	/**
-	 * Devuelve el número de enlaces que salen de un nodo
-	 *
-	 * @param node
-	 * @return
-	 */
-	public int numberOfEdges(String node) {
-		return bag.outgoingEdgesOf(node).size();
-	}
-
-	/**
-	 * Devuelve un booleano indicando si dos nodos están conectados en el BAG
-	 *
-	 * @param node1
-	 *            nodo origen
-	 * @param node2
-	 *            nodo destino
-	 * @return conexión
-	 */
-	public boolean connected(String node1, String node2) {
-		return bag.containsEdge(node1, node2);
-	}
-
-	/**
-	 * Devuelve el último nodo del BAG
-	 *
-	 * @return último nodo
-	 */
-	public String getLastNode() {
-		if (phaseHistory.size() >= 1) {
-			return phaseHistory.get(phaseHistory.size() - 1);
-		} else {
-			return null;
-		}
-
 	}
 
 	/**
@@ -243,26 +155,6 @@ public class BAG {
 		} else {
 			return "none";
 		}
-	}
-
-	/**
-	 * Devuelve los nodos a los que se puede llegar desde el nodo introducido
-	 * como parámetro
-	 *
-	 * @param node
-	 *            nodo actual
-	 * @return lista de nodos candidatos a ser el siguiente paso del ataque
-	 */
-	public HashMap<String, Double> getNextCandidates(String node) {
-		Set<String> nodes = bag.vertexSet();
-		HashMap<String, Double> candidates = new HashMap<>();
-		for (String nextCandidate : nodes) {
-			if (bag.containsEdge(node, nextCandidate)) {
-				DefaultWeightedEdge e = (DefaultWeightedEdge) bag.getEdge(node, nextCandidate);
-				candidates.put(nextCandidate, bag.getEdgeWeight(e));
-			}
-		}
-		return candidates;
 	}
 
 	/**
@@ -290,47 +182,6 @@ public class BAG {
 	 */
 	public ArrayList<String> getHistory() {
 		return phaseHistory;
-	}
-
-	/**
-	 * Devuelve la probabilidad del enlace
-	 *
-	 * @param origin
-	 *            nodo origen
-	 * @param destination
-	 *            nodo destino
-	 * @return probabilidad del enlace
-	 */
-	public double getWeight(String origin, String destination) {
-		return bag.getEdgeWeight(bag.getEdge(origin, destination));
-	}
-
-	/**
-	 * Devuelve la duración del ataque
-	 *
-	 * @return duración del ataque
-	 */
-	public double getTime() {
-
-		return currentTime.getTimeInMillis() - startTime.getTimeInMillis();
-
-	}
-
-	/**
-	 * Devuelve el grafo al que está asociado el grafo oculto
-	 */
-	public BAG getLink() {
-		return link;
-	}
-
-	/**
-	 * Añade un evento al historial del BAG
-	 *
-	 * @param event
-	 *            evento
-	 */
-	public void setEventData(HashMap<String, String> event) {
-		eventHistoryData.add(event);
 	}
 
 	/**
@@ -423,15 +274,15 @@ public class BAG {
 		ArrayList<Integer> ids = new ArrayList<>();
 
 		for (BAG bagItem : bags) {
-			if (!bagItem.isPhantom()) {
-				selectedNodes.add(bagItem.getPosition());
-				phaseHistories.add(bagItem.getHistory());
-				markovNodes_.add(bagItem.getMarkovNodes());
-				probsMarkov.add(bagItem.getProbMarkov());
-				doneList.add(bagItem.getDone());
-				attacks.add(bagItem.getAttack());
-				ids.add(bagItem.getMarkovID());
-			}
+
+			selectedNodes.add(bagItem.getPosition());
+			phaseHistories.add(bagItem.getHistory());
+			markovNodes_.add(bagItem.getMarkovNodes());
+			probsMarkov.add(bagItem.getProbMarkov());
+			doneList.add(bagItem.getDone());
+			attacks.add(bagItem.getAttack());
+			ids.add(bagItem.getMarkovID());
+
 		}
 
 		if (bags.isEmpty()) {
@@ -461,31 +312,9 @@ public class BAG {
 		}
 	}
 
-	public static BAG clone(BAG originalBag) {
-
-		BAG newBag = new BAG();
-		newBag.setBag(originalBag.getBag());
-		newBag.setEventHistoryData(originalBag.getEventHistoryData());
-		newBag.setMarkovNodes(originalBag.getMarkovNodes());
-		newBag.setSelectedNode(originalBag.getPosition());
-		newBag.setPhaseHistory(new ArrayList<String>(originalBag.getPhaseHistory()));
-
-		return newBag;
-
-	}
-
-	public void removeMarkov(ArrayList<String> markovNodes) {
-		if (this.markovNodes.equals(markovNodes)) {
-			this.markovNodes.clear();
-		}
-	}
-
 	/*
 	 * Otros getters y setters
 	 */
-	public ListenableDirectedWeightedGraph<String, DefaultEdge> getBag() {
-		return bag;
-	}
 
 	public void setBag(ListenableDirectedWeightedGraph<String, DefaultEdge> bag) {
 		this.bag = bag;
@@ -495,36 +324,16 @@ public class BAG {
 		this.selectedNode = selectedNode;
 	}
 
-	public ArrayList<String> getPhaseHistory() {
-		return phaseHistory;
-	}
-
-	public void setPhaseHistory(ArrayList<String> phaseHistory) {
-		this.phaseHistory = phaseHistory;
-	}
-
-	public ArrayList<HashMap<String, String>> getEventHistoryData() {
-		return eventHistoryData;
-	}
-
-	public void setEventHistoryData(ArrayList<HashMap<String, String>> eventHistoryData) {
-		this.eventHistoryData = eventHistoryData;
-	}
-
-	public Calendar getStartTime() {
-		return startTime;
-	}
-
-	public Calendar getCurrentTime() {
-		return currentTime;
-	}
-
-	public void setMarkovNodes(ArrayList<String> markovNodes) {
-		this.markovNodes = markovNodes;
-	}
-
 	public void setMarkovID(int markovID) {
 		this.markovID = markovID;
+	}
+
+	public ListenableDirectedWeightedGraph<String, DefaultEdge> getBag() {
+		return bag;
+	}
+
+	public ArrayList<String> getPhaseHistory() {
+		return phaseHistory;
 	}
 
 	public int getMarkovID() {

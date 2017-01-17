@@ -2,14 +2,7 @@ package control;
 
 import control.Dharma;
 
-import java.io.IOException;
-import java.net.DatagramPacket;
-import java.net.DatagramSocket;
-import java.net.InetAddress;
-import java.net.SocketException;
-import java.net.UnknownHostException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 
 /**
@@ -20,8 +13,6 @@ import java.util.HashMap;
  */
 public class MarkovController {
 
-	private ArrayList<Integer> oldQueries = new ArrayList<>();
-	private static HashMap<Integer, HashMap<String, Object>> chainMap = new HashMap<>();
 	private HashMap<String, Object> data;
 	private int markovID;
 	private double probMarkov;
@@ -100,7 +91,7 @@ public class MarkovController {
 		data.put("prob", probMarkov);
 		data.put("done", done);
 		markovMap.put("node", node);
-		dharma.processEvent(markovMap, nodes, true, markovID, probMarkov, done, infoAtt, attack);
+		dharma.processEvent(markovMap, nodes, markovID, probMarkov, done, infoAtt, attack);
 	}
 
 	/**
