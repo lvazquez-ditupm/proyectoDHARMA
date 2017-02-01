@@ -51,7 +51,6 @@ public class JSONGraphParser {
         }
 
         //System.out.println("Grafo generado: ");
-
         for (String edge : edges) {
 
             String source = "";
@@ -73,7 +72,6 @@ public class JSONGraphParser {
             exportedWeights.put(source + "-" + target, weight);
 
             //System.out.println(source + " ---(" + weight + ")---> " + target);
-
         }
 
         parsedGraph.put("nodes", exportedNodes);

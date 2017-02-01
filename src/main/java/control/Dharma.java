@@ -5,7 +5,6 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.HashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -23,7 +22,7 @@ public class Dharma {
     private static final DharmaProperties props = new DharmaProperties();
 
     public Dharma() {
-        
+
     }
 
     /**
@@ -41,16 +40,6 @@ public class Dharma {
     }
 
     /**
-     * Crea una red bayesiana oculta que no es mostrada al usuario a partir de
-     * una normal
-     */
-    public void setNewPhantomBAG(BAG link) {
-        BAG hiddenBag = BAG.clone(bagList.get(bagList.indexOf(link)));
-        hiddenBag.setPhantom(link);
-        bagList.add(hiddenBag);
-    }
-
-    /**
      * Procesa un evento recibido, actualizando el BAG o creando uno nuevo
      *
      * @param eventMap evento recibido
@@ -61,254 +50,68 @@ public class Dharma {
      * @param done
      * @param attack
      */
-    public void processEvent(HashMap<String, Object> eventMap, ArrayList<String> markovNodes, boolean markov, int markovID, double probMarkov, double done, double risk, String attack) {
+    public void processEvent(HashMap<String, Object> eventMap, ArrayList<String> nodes, int markovID,
+            double probMarkov, double done, HashMap<String, Object> infoAtt, String attack) {
 
-        ArrayList<BAG> bagChangeList = getChangeList((String) eventMap.get("node"));
+        try {
+            if (bagList.isEmpty()) {
+                startNewBAG();
+                BAG bag = bagList.get(bagList.size() - 1);
+                bag.setMarkovID(markovID);
+                bag.setPosition((String) eventMap.get("node"), markovID, bagList, nodes, probMarkov, done,
+                        infoAtt, attack);
 
-        if (markov) {
-            try {
-                if (bagList.isEmpty()) {
+            } else {
+                boolean flag = false;
+                for (BAG bag : bagList) {
+                    if (bag.getMarkovID() == markovID) {
+                        bag.setPosition((String) eventMap.get("node"), markovID, bagList, nodes, probMarkov,
+                                done, infoAtt, attack);
+                        flag = true;
+                        break;
+                    }
+                }
+                if (!flag) {
                     startNewBAG();
                     BAG bag = bagList.get(bagList.size() - 1);
                     bag.setMarkovID(markovID);
-                    bag.setPosition((String) eventMap.get("node"), bagList.indexOf(bag), bagList, markov, markovNodes, probMarkov, done, risk, attack);
-                    //doActions(bag, (String) eventMap.get("node"));
-
-                } else {
-                    boolean flag = false;
-                    for (BAG bag : bagList) {
-                        if (bag.getMarkovID() == markovID) {
-                            bag.setPosition((String) eventMap.get("node"), bagList.indexOf(bag), bagList, markov, markovNodes, probMarkov, done, risk, attack);
-                            //doActions(bag, (String) eventMap.get("node"));
-                            flag = true;
-                            break;
-                        }
-                    }
-                    if (!flag) {
-                        startNewBAG();
-                        BAG bag = bagList.get(bagList.size() - 1);
-                        bag.setMarkovID(markovID);
-                        bag.setPosition((String) eventMap.get("node"), bagList.indexOf(bag), bagList, markov, markovNodes, probMarkov, done, risk, attack);
-                        //doActions(bag, (String) eventMap.get("node"));
-                    }
-                }
-
-            } catch (Exception ex) {
-                Logger.getLogger(Dharma.class.getName()).log(Level.SEVERE, null, ex);
-            }
-
-        }
-        /* if (bagChangeList.size() == 1) {
-            try {
-                BAG bag = bagChangeList.get(0);
-                filterPhantom(bag, false);
-                orderList();
-                bag.setPosition((String) eventMap.get("node"), bagList.indexOf(bag), bagList, markov, probMarkov, done, attack);
-                doActions(bag, (String) eventMap.get("node"));
-            } catch (Exception ex) {
-                System.err.println("Nodo no existente en la red");
-            }
-        } else if (bagChangeList.size() > 1) {
-            try {
-                BAG bag = getWhoContinues(bagChangeList, (String) eventMap.get("node"), true);
-                orderList();
-                bag.setPosition((String) eventMap.get("node"), bagList.indexOf(bag), bagList, markov, probMarkov, done, attack);
-                doActions(bag, (String) eventMap.get("node"));
-            } catch (Exception ex) {
-                System.err.println("Nodo no existente en la red");
-            }
-
-        } else {
-            try {
-                if (bagList.isEmpty()) {
-                    startNewBAG();
-                }
-                BAG bag = bagList.get(bagList.size() - 1);
-                bag.setPosition((String) eventMap.get("node"), bagList.size() - 1, bagList, markov, probMarkov, done, attack);
-                doActions(bag, (String) eventMap.get("node"));
-            } catch (Exception ex) {
-                System.err.println("Nodo no existente en la red");
-            }
-
-        }
-        deleteFolder(-1);*/
-    }
-
-    /**
-     * Si varios grafos continuan al mismo nodo, estima cual es el que avanza
-     *
-     * @param bagChangeCandidates candidatos a continuar
-     * @param eventString evento al que hay que avanzar
-     * @param filter indica si hay grafos fantasma que deben ser eliminados
-     * @return grafo actualizado
-     */
-    public BAG getWhoContinues(ArrayList<BAG> bagChangeCandidates, String eventString, boolean filter) {
-
-        BAG nextBAG;
-        nextBAG = correlateNextBag(bagChangeCandidates);
-        BAG phantomPreviousBag;
-
-        if (nextBAG == null) {
-
-            double maxWeight = -1;
-
-            for (BAG bag : bagChangeCandidates) {
-                if (bag.getWeight(bag.getLastNode(), eventString) > maxWeight) {
-                    maxWeight = bag.getWeight(bag.getLastNode(), eventString);
-                    nextBAG = bag;
-                } else if (bag.getWeight(bag.getLastNode(), eventString) == maxWeight
-                        && bag.getTime() < nextBAG.getTime() && bag.getCurrentTime().compareTo(Calendar.getInstance()) >= -10000) {  //To Do cambiar la fecha mínima para considerar 
-                    nextBAG = bag;
+                    bag.setPosition((String) eventMap.get("node"), markovID, bagList, nodes, probMarkov, done,
+                            infoAtt, attack);
                 }
             }
 
-            if (filter) {
-                if (nextBAG.isPhantom()) {
-                    repairBAG(nextBAG, eventString);
-                } else {
-                    filterPhantom(nextBAG, true);
-                }
-
-            }
+        } catch (Exception ex) {
+            Logger.getLogger(Dharma.class.getName()).log(Level.SEVERE, null, ex);
         }
 
-        return nextBAG;
-    }
-/*
-    /**
-     * Repara el grafo si ante una coincidencia se ha hecho avanzar uno por
-     * probabilidad y posteriormente se comprueba que es otro el grafo que
-     * debería haber avanzado
-     *
-     * @param bag grafo a modificar
-     * @param eventString evento ocurrido
-     */
-    public void repairBAG(BAG bag, String eventString) {
-
-        BAG original = bag.getLink();
-        String mutualNode = bag.getLastNode();
-        String nextNode = original.getLastNode();
-
-        bagList.remove(original);
-        undoActions(original, nextNode);
-        bag.setReal();
-
-        ArrayList<BAG> candidates = getChangeList(nextNode);
-        candidates.remove(bag);
-
-        BAG repairedBAG = getWhoContinues(candidates, nextNode, false);
-
-        //bag.setPosition(eventString, bagList.indexOf(bag), bagList);
-        if (repairedBAG != null) {
-            try {
-                repairedBAG.setPosition(nextNode, bagList.indexOf(repairedBAG), bagList, false, repairedBAG.getMarkovNodes(), repairedBAG.getProbMarkov(), repairedBAG.getDone(), repairedBAG.getRisk(), repairedBAG.getAttack());
-                doActions(repairedBAG, nextNode);
-            } catch (Exception ex) {
-                Logger.getLogger(Dharma.class.getName()).log(Level.SEVERE, null, ex);
-            }
-        }
-
-    }
-
-    /**
-     * Elimina grafos ocultos que no van a ser necesitados
-     *
-     * @param collision indica que hay colisión entre dos BAG, para crear uno
-     * nuevo fantasma
-     * @param nextBAG
-     */
-    public void filterPhantom(BAG nextBAG, boolean collision) {
-
-        boolean newPhantomFlag = true;
-
-        for (BAG bag : bagList) {
-            if (bag.isPhantom() && bag.getLink() == nextBAG) {
-                bagList.remove(bag);
-                newPhantomFlag = false;
-                break;
-            }
-        }
-
-        if (newPhantomFlag && nextBAG.numberOfEdges(nextBAG.getLastNode()) > 1 && collision) {
-            setNewPhantomBAG(nextBAG);
-        }
-    }
-
-    /**
-     * Ordena la lista de BAGs para dejar los ocultos al final (y evitar huecos
-     * en la visualización de grafos
-     */
-    public void orderList() {
-        ArrayList<BAG> orderedList = new ArrayList<>();
-
-        for (BAG item : bagList) {
-            if (!item.isPhantom()) {
-                orderedList.add(item);
-            }
-        }
-        for (BAG item : bagList) {
-            if (item.isPhantom()) {
-                orderedList.add(item);
-            }
-        }
-        bagList = orderedList;
     }
 
     /**
      * Elimina los ficheros JSON de grafos eliminados
      */
-    private void deleteFolder() {
+    public static void deleteFolder() {
         File folder = new File(props.getBagVisualizatorPathValue() + "/public");
         File[] files = folder.listFiles();
         ArrayList<BAG> visibleBagList = new ArrayList<>();
+        ArrayList<Integer> existingGraphs = new ArrayList<>();
         String nombre;
         int id;
 
+        existingGraphs.add(0);
         for (BAG bag : bagList) {
-            if (!bag.isPhantom()) {
-                visibleBagList.add(bag);
-            } else {
-                break;
-            }
+
+            existingGraphs.add(bag.getMarkovID());
+            visibleBagList.add(bag);
         }
 
         if (files != null) {
             for (File f : files) {
                 nombre = f.getName();
                 id = Integer.parseInt(nombre.substring(nombre.indexOf("datos") + 5, nombre.indexOf(".json")));
-                if (id > visibleBagList.size()) {
+                if (!existingGraphs.contains(id)) {
                     f.delete();
                 }
             }
-        }
-
-    }
-
-    /**
-     * Devuelve una lista con los BAGs que pueden avanzar al nuevo nodo
-     *
-     * @param node nodo del evento recibido
-     * @return posibles avances al nodo
-     */
-    private ArrayList<BAG> getChangeList(String node) {
-        ArrayList<BAG> bagChangeList = new ArrayList<>();
-        for (BAG bag : bagList) {
-            if (bag.connected(bag.getLastNode(), node)
-                    && bag.getNodeStatus(node).equals("none")) {
-                bagChangeList.add(bag);
-            }
-        }
-        return bagChangeList;
-    }
-
-    /**
-     * Elimina los nodos previstos por HMM del BAG que los posea
-     *
-     * @param markovNodes cadena de nodos a borrar
-     */
-    public void removeMarkov(ArrayList<String> markovNodes) {
-        for (BAG bag : bagList) {
-            bag.removeMarkov(markovNodes);
         }
     }
 
@@ -320,13 +123,15 @@ public class Dharma {
     public void removeBAG(int id) {
         try {
             for (BAG bag : bagList) {
-                if (bagList.indexOf(bag) + 1 == id) {
+                // System.out.println(bag.getMarkovID());
+                // System.out.println(id);
+                if (bag.getMarkovID() == id) {
                     bagList.remove(bag);
                     break;
                 }
             }
             for (BAG bag : bagList) {
-                bag.exportIndividualJSON(id - 1);
+                bag.exportIndividualJSON(bag.getMarkovID());
             }
 
             if (bagList.isEmpty()) {
@@ -337,42 +142,7 @@ public class Dharma {
             deleteFolder();
 
         } catch (FileNotFoundException | UnsupportedEncodingException ex) {
-            Logger.getLogger(Dharma.class
-                    .getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(Dharma.class.getName()).log(Level.SEVERE, null, ex);
         }
-    }
-
-    /**
-     * Ejecuta las acciones relacionadas con el nodo
-     *
-     * @param bag
-     * @param node
-     */
-    public void doActions(BAG bag, String node) {
-        ActionController.doActions(bag, node);
-    }
-
-    /**
-     * Ante una corrección del grafo, deshace las acciones del nodo y BAG
-     * seleccionados
-     *
-     * @param bag
-     * @param node
-     */
-    public void undoActions(BAG bag, String node) {
-        ActionController.undoActions(bag, node);
-    }
-
-    /**
-     * Correla los datos de los eventos pasados para inferir el BAG que avanza
-     *
-     * @param bagChangeCandidates candidatos a avanzar
-     * @return BAG a avanzar
-     */
-    public BAG correlateNextBag(ArrayList<BAG> bagChangeCandidates) {
-
-        //To Do
-        System.err.println("To Do!");
-        return null;
     }
 }

@@ -5,9 +5,9 @@ location = os.path.abspath('./');
 def SEC():
 	ps = subprocess.Popen('ps -ef | grep sec', stdout=subprocess.PIPE, shell=True)
 	(out, err) = ps.communicate()
-	if out.find("DHARMA/sensors/SEC/sec.rules") == -1:
+	if out.find("proyectoDHARMA/sensors/SEC/sec.rules") == -1:
 		print 'Arrancando SEC'
-		subprocess.Popen('sec --conf='+location+'/sensors/SEC/sec.rules --input='+location+'/sensors/SEC/asdf.log --input=/var/log/syslog --log='+location+'/sensors/events.log', shell=True)
+		subprocess.Popen('sec --conf='+location+'/sensors/SEC/sec.rules --input='+location+'/sensors/SEC/asdf.log --input=/var/log/syslog --log='+location+'/sensors/SECevents.log', shell=True)
 
 def tsusen():
 	ps = subprocess.Popen('ps -ef | grep tsusen', stdout=subprocess.PIPE, shell=True)

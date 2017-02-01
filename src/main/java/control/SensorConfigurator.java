@@ -24,9 +24,9 @@ public class SensorConfigurator implements Runnable {
     private static final DharmaProperties props = new DharmaProperties();
 
     public void run() {
-        
+
         System.out.println("****  Reiniciando sensores  ****");
-        
+
         stopAll();
 
         try {
@@ -39,7 +39,6 @@ public class SensorConfigurator implements Runnable {
 
     }
 
-    
     private static void stopAll() {
 
     }
@@ -57,7 +56,7 @@ public class SensorConfigurator implements Runnable {
 
         context.setWriter(writer);
         ScriptEngine engine = manager.getEngineByName("python");
-        FileReader file = new FileReader(props.getDharmaPathValue() + "DHARMA/loadScript.py");
+        FileReader file = new FileReader(props.getDharmaPathValue() + "/loadScript.py");
         engine.eval(file, context);
         //System.out.println(writer.toString());  //Debug
     }

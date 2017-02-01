@@ -19,31 +19,19 @@ public class Main {
     private static DataCataloger dataCataloger;
     private static LogReceiver logReceiver;
     private static Dharma dharma;
-    ///
     private static MarkovController markovController;
-    ///
 
     public static void main(String[] args) {
         dharma = new Dharma();
         BAG.exportCleanJSON();
-        ///
         markovController = new MarkovController();
-        ///
         eventReceiver = new SECEventReceiver();
         new Thread(eventReceiver).start();
-        ///
-        /*try {
-            Thread.sleep(3000);
-        } catch (InterruptedException ex) {
-        }*/
-        //markovController.parse("HMM: IDAtaque=\"1\";TipoAtaque=\"DDOS\";Nodos=\"D2,D3,A2,N2\";Estado=\"D2\";PEstado=\"0.3\";PFFinal=\"0.4\"");
-        //markovController.parse("HMM: IDAtaque=\"1\";TipoAtaque=\"DDOS\";Nodos=\"D2,D3,A2,N2\";Estado=\"D3\";PEstado=\"0.3\";PFFinal=\"0.4\"");
-        //markovController.parse("HMM: IDAtaque=\"1\";TipoAtaque=\"DDOS\";Nodos=\"D2,D3,A2,N2\";Estado=\"N2\";PEstado=\"0.3\";PFFinal=\"0.4\"");
-        ///
+
         sensorConfigurator = new SensorConfigurator();
         //dataCataloger = new DataCataloger();
-        
-        logReceiver = new LogReceiver(512, "127.0.0.1");
+
+        logReceiver = new LogReceiver(5120, "127.0.0.1");
 
         //ActivePeriods.create();
         //new Thread(dataCataloger).start();
@@ -53,13 +41,13 @@ public class Main {
         }*/
         new Thread(sensorConfigurator).start();
         logReceiver.start();
+
         /*SyslogCreator syslogCreator = new SyslogCreator();
         syslogCreator.put("---> Network ANOMALY of: 45/100");
         syslogCreator.put("10/18/2016-10:53:43.274321  [**] [1:2010937:2] ET POLICY "
                 + "Suspicious inbound to mySQL port 3306 [**] [Classification: Potentially Bad Traffic] "
                 + "[Priority: 2] {TCP} 10.0.0.19:33167 -> 10.0.0.18:3306");*/
-        
-        /*syslogCreator.put("10/18/2016-10:53:44.274321  [**] [1:2010937:2] ET POLICY "
+ /*syslogCreator.put("10/18/2016-10:53:44.274321  [**] [1:2010937:2] ET POLICY "
                 + "Suspicious inbound to hola port 3307 [**] [Classification: Potentially Bad Traffic] "
                 + "[Priority: 2] {TCP} 10.0.0.19:33143 -> 10.0.0.18:3307");
         
@@ -69,6 +57,5 @@ public class Main {
                 + "[Priority: 2] {TCP} 10.0.0.19:8080 -> 10.0.0.18:1234");
         
         syslogCreator.put("Anomalía WiFi en biblioteca;\"IP\":\"192.168.1.1\";\"MAC\":\"AA:DD:33:11:01\"");*/
-
     }
 }

@@ -159,7 +159,7 @@ public class DharmaProperties {
     public String getAnomalyThresholdValue() {
         return ANOMALY_THRESHOLD_VALUE;
     }
-    
+
     public String getSyslogPeriodValue() {
         return SYSLOG_PERIOD_VALUE;
     }

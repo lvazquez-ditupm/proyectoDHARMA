@@ -35,7 +35,9 @@ public class JSONGenerator {
      * @param attack tipo de ataque
      * @return string JSON
      */
-    public String individualGenerator(ListenableDirectedWeightedGraph<String, DefaultEdge> bag, String selectedNode, ArrayList<String> phaseHistory, ArrayList<String> markovNodes, int position, double probMarkov, double done, double risk, String attack) {
+    public String individualGenerator(ListenableDirectedWeightedGraph<String, DefaultEdge> bag, String selectedNode,
+            ArrayList<String> phaseHistory, ArrayList<String> markovNodes, int position, double probMarkov, double done, HashMap<String, Object> infoAtt,
+            String attack) {
 
         Gson gson = new Gson();
 
@@ -88,11 +90,11 @@ public class JSONGenerator {
             for (String nextCandidate : nodes) {
 
                 if (bag.containsEdge(node, nextCandidate)) {
-                    DefaultWeightedEdge e = (DefaultWeightedEdge) bag.getEdge(node, nextCandidate);
                     edgeMap = new HashMap<>();
                     edgeMap.put("source", i);
                     edgeMap.put("target", j);
-                    //edgeMap.put("weight", bag.getEdgeWeight(e)); DESCOMENTAR PARA MOSTRAR LOS PESOS DE LOS ENLACES
+                    // edgeMap.put("weight", bag.getEdgeWeight(e)); DESCOMENTAR
+                    // PARA MOSTRAR LOS PESOS DE LOS ENLACES
                     edgesList.add(edgeMap);
                 }
                 j++;
@@ -115,9 +117,11 @@ public class JSONGenerator {
         jsonMap.put("nodes", nodesList);
         jsonMap.put("edges", edgesList);
         jsonMap.put("routes", pathList);
-        jsonMap.put("attackID", position + 1);
+        jsonMap.put("attackID", position);
         jsonMap.put("done", done);
-        jsonMap.put("risk", risk);
+        for (String infoAttKey : infoAtt.keySet()) {
+            jsonMap.put(infoAttKey, infoAtt.get(infoAttKey));
+        }
         jsonMap.put("attack", attack);
 
         return gson.toJson(jsonMap);
@@ -136,7 +140,10 @@ public class JSONGenerator {
      * @param attacks lista de tipos de ataques
      * @return string JSON
      */
-    public String totalGenerator(ListenableDirectedWeightedGraph<String, DefaultEdge> bag, ArrayList<String> selectedNodes, ArrayList<ArrayList<String>> nextNodes, ArrayList<ArrayList<String>> phaseHistories, ArrayList<Double> probsMarkov, ArrayList<Double> doneList, ArrayList<String> attacks) {
+    public String totalGenerator(ListenableDirectedWeightedGraph<String, DefaultEdge> bag,
+            ArrayList<String> selectedNodes, ArrayList<ArrayList<String>> nextNodes,
+            ArrayList<ArrayList<String>> phaseHistories, ArrayList<Double> probsMarkov, ArrayList<Double> doneList,
+            ArrayList<String> attacks, ArrayList<Integer> ids) {
 
         Gson gson = new Gson();
 
@@ -162,23 +169,37 @@ public class JSONGenerator {
             nodeMap = new HashMap<>();
             nodeMap.put("id", i);
             nodeMap.put("title", node);
-            
-            if(node.equals("A2")){
-                System.out.println("");
-            }
 
             for (int k = 0; k < selectedNodes.size(); k++) {
-                if (node.equals(selectedNodes.get(k))) {
+                if (nodeMap.get("status") == null) {
+                    if (node.equals(selectedNodes.get(k))) {
+                        nodeMap.put("status", "current" + probsMarkov.get(k));
+                        nodesList.add(nodeMap);
+                    } else if (nextNodes.get(k).contains(node)) {
+                        nodeMap.put("status", "markov");
+                        nodesList.add(nodeMap);
+                    } else if (phaseHistories.get(k).contains(node)) {
+                        nodeMap.put("status", "previous");
+                        nodesList.add(nodeMap);
+                    }
+                } else if (nodeMap.get("status").toString().contains("current") && node.equals(selectedNodes.get(k))) {
+                    String oldValue_ = nodeMap.get("status").toString();
+                    String oldValue = oldValue_.substring(oldValue_.indexOf("t") + 1);
+                    nodeMap.put("status", "current" + oldValue + "/" + probsMarkov.get(k));
+                    nodesList.add(nodeMap);
+                } else if (nodeMap.get("status").toString() == "markov" && (node.equals(selectedNodes.get(k)))) {
                     nodeMap.put("status", "current" + probsMarkov.get(k));
                     nodesList.add(nodeMap);
-                } else if (phaseHistories.get(k).contains(node)) {
-                    nodeMap.put("status", "previous");
-                    nodesList.add(nodeMap);
-                } else if (nextNodes.get(k).contains(node)) {
-                    nodeMap.put("status", "markov");
-                    nodesList.add(nodeMap);
+                } else if (nodeMap.get("status").toString() == "previous") {
+                    if (node.equals(selectedNodes.get(k))) {
+                        nodeMap.put("status", "current" + probsMarkov.get(k));
+                        nodesList.add(nodeMap);
+                    } else if (nextNodes.get(k).contains(node)
+                            && (nodeMap.get("status") == null || nodeMap.get("status") == "previous")) {
+                        nodeMap.put("status", "markov");
+                        nodesList.add(nodeMap);
+                    }
                 }
-
             }
 
             for (HashMap nodeItem : nodesList) {
@@ -220,8 +241,9 @@ public class JSONGenerator {
 
             historyList.add(pathString);
         }
-        
-        ArrayList<HashMap> _nodesList = new ArrayList<>(nodesList.stream().distinct().collect(Collectors.toList())); //Eliminar duplicados
+
+        ArrayList<HashMap> _nodesList = new ArrayList<>(nodesList.stream().distinct().collect(Collectors.toList())); // Eliminar
+        // duplicados
 
         jsonMap.put("nodes", _nodesList);
         jsonMap.put("edges", edgesList);
@@ -229,7 +251,7 @@ public class JSONGenerator {
         jsonMap.put("routes", _historyList);
         jsonMap.put("done", doneList);
         jsonMap.put("attack", attacks);
-        
+        jsonMap.put("ids", ids);
         return gson.toJson(jsonMap);
     }
 }

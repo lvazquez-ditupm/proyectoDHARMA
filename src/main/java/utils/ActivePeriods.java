@@ -21,7 +21,7 @@ public class ActivePeriods {
     private static final DharmaProperties props = new DharmaProperties();
 
     public static void create() {
-             
+
         HashMap<Integer, String> weekMap = new HashMap<>();
         HashMap<String, Object> jsonMap = new HashMap<>();
 
@@ -52,7 +52,7 @@ public class ActivePeriods {
 
         PrintWriter writer;
         try {
-            writer = new PrintWriter(props.getDatasetPathValue()+"/global.dharma", "UTF-8");
+            writer = new PrintWriter(props.getDatasetPathValue() + "/global.dharma", "UTF-8");
             writer.println(gson.toJson(jsonMap));
             writer.close();
             System.out.println("****  Generado fichero global.dharma  ****");

@@ -1,6 +1,5 @@
 package utils;
 
-import core.BAGNodeDetector;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -9,8 +8,8 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
- * This class parses each single line of the SEC event log, to find what's the next
- * node to advance in the BAG
+ * This class parses each single line of the SEC event log, to find what's the
+ * next node to advance in the BAG
  *
  * @author UPM (member of DHARMA Development Team) (http://dharma.inf.um.es)
  * @version 1.0
@@ -52,16 +51,18 @@ public class SECEventParser {
 
             outData = process(nodeData);
         }
-        
-        if(!outData.isEmpty()){
-            outData = BAGNodeDetector.set(outData);
+
+        if (!outData.isEmpty()) {
+            //TODO
         }
-        
+
         return outData;
     }
 
     /**
-     * Procesa los detalles del log, detectando los parámetros de origen y de destino
+     * Procesa los detalles del log, detectando los parámetros de origen y de
+     * destino
+     *
      * @param nodeData hashmap sin procesar
      * @return hashmap con clasificación origen-destino
      */

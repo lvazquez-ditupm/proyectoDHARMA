@@ -18,43 +18,43 @@ import utils.SECEventParser;
  */
 public class SECEventReceiver implements Runnable {
 
-	private final DharmaProperties props = new DharmaProperties();
-	Dharma dharma = new Dharma();
+    private final DharmaProperties props = new DharmaProperties();
+    Dharma dharma = new Dharma();
 
-	public SECEventReceiver() {
-	}
+    public SECEventReceiver() {
+    }
 
-	@Override
-	public void run() {
+    @Override
+    public void run() {
 
-		BufferedReader idmefDatos = null;
-		String xml_file = props.getEventLogPathValue();
-		try {
-			String str;
-			idmefDatos = new BufferedReader(new FileReader(xml_file));
-			String str2;
-			while (true) {
-				try {
-					while (idmefDatos.ready()) {
-						str = idmefDatos.readLine();
-						if (!str.equals("")) {
-							// HashMap<String, Object> nodeData =
-							// SECEventParser.parse(str);
-							HashMap<String, Object> nodeData = new HashMap<>();
-							nodeData.put("node", str);
-							if (!nodeData.isEmpty()) {
-								dharma.processEvent(nodeData, null, false, -1, -1, -1, -1, "");
-							}
+        BufferedReader idmefDatos = null;
+        String xml_file = props.getEventLogPathValue();
+        try {
+            String str;
+            idmefDatos = new BufferedReader(new FileReader(xml_file));
+            String str2;
+            while (true) {
+                try {
+                    while (idmefDatos.ready()) {
+                        str = idmefDatos.readLine();
+                        if (!str.equals("")) {
+                            // HashMap<String, Object> nodeData =
+                            // SECEventParser.parse(str);
+                            HashMap<String, Object> nodeData = new HashMap<>();
+                            nodeData.put("node", str);
+                            if (!nodeData.isEmpty()) {
+                                //TODO
+                            }
 
-						}
-					}
-				} catch (IOException ex) {
-					Logger.getLogger(SECEventReceiver.class.getName()).log(Level.SEVERE, null, ex);
-				}
-			}
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-	}
+                        }
+                    }
+                } catch (IOException ex) {
+                    Logger.getLogger(SECEventReceiver.class.getName()).log(Level.SEVERE, null, ex);
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
 
 }

@@ -1,0 +1,15 @@
+#SEC
+Descargar, cambiar la ruta a Perl en el fichero sec y copiarlo a donde esté Perl
+cp sec /usr/bin 
+
+#NODE/NPM
+sudo apt-get install nodejs
+sudo apt-get install npm
+
+#XLS parser
+pip install xlrd
+
+#TSUSEN
+sudo apt-get install python-pcapy
+sudo apt-get install python-pip
+sudo pip install python-geoip python-geoip-geolite2
