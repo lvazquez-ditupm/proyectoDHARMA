@@ -13,3 +13,26 @@ pip install xlrd
 sudo apt-get install python-pcapy
 sudo apt-get install python-pip
 sudo pip install python-geoip python-geoip-geolite2
+
+#Ubertooth
+sudo apt-get install cmake libusb-1.0-0-dev make gcc libbluetooth-dev
+cd
+wget https://github.com/walac/pyusb/archive/1.0.0b1.tar.gz -O pyusb-1.0.0b1.tar.gz
+tar xvf pyusb-1.0.0b1.tar.gz
+cd pyusb-1.0.0b1
+sudo python setup.py install
+cd
+wget https://github.com/greatscottgadgets/libbtbb/archive/2014-02-R2.tar.gz -O libbtbb-2014-02-R2.tar.gz
+tar xf libbtbb-2014-02-R2.tar.gz
+cd libbtbb-2014-02-R2
+mkdir build
+cd build
+cmake ..
+make
+sudo make install
+cd
+wget https://github.com/greatscottgadgets/ubertooth/archive/2014-02-R2.tar.gz -O ubertooth-2014-02-R2.tar.gz
+tar xf ubertooth-2014-02-R2.tar.gz
+cd ubertooth-2014-02-R2/host
+mkdir build
+sudo ldconfig

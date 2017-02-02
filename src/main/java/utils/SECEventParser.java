@@ -8,8 +8,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
- * This class parses each single line of the SEC event log, to find what's the
- * next node to advance in the BAG
+ * This class parses each single line of the SEC event log
  *
  * @author UPM (member of DHARMA Development Team) (http://dharma.inf.um.es)
  * @version 1.0

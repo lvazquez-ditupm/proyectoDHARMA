@@ -23,24 +23,21 @@ public class SensorConfigurator implements Runnable {
 
     private static final DharmaProperties props = new DharmaProperties();
 
+    @Override
     public void run() {
 
         System.out.println("****  Reiniciando sensores  ****");
-
         stopAll();
-
         try {
             execPython();
-        } catch (ScriptException ex) {
-            Logger.getLogger(SensorConfigurator.class.getName()).log(Level.SEVERE, null, ex);
-        } catch (IOException ex) {
+        } catch (ScriptException | IOException ex) {
             Logger.getLogger(SensorConfigurator.class.getName()).log(Level.SEVERE, null, ex);
         }
 
     }
 
     private static void stopAll() {
-
+        //TODO
     }
 
     /**

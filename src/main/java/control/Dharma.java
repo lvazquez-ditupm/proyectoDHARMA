@@ -1,6 +1,6 @@
 package control;
 
-import core.BAG;
+import core.Graph;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.UnsupportedEncodingException;
@@ -18,7 +18,7 @@ import utils.DharmaProperties;
  */
 public class Dharma {
 
-    private static ArrayList<BAG> bagList = new ArrayList<>();
+    private static ArrayList<Graph> graphList = new ArrayList<>();
     private static final DharmaProperties props = new DharmaProperties();
 
     public Dharma() {
@@ -29,54 +29,51 @@ public class Dharma {
      * Crea una nueva red bayesiana a partir del JSON almacenado en la ruta
      * determinada en la configuración del sistema
      */
-    public void startNewBAG() {
-        BAG bag = new BAG();
-        bagList.add(bag);
+    public void startNewGraph() {
+        Graph graph = new Graph();
+        graphList.add(graph);
         try {
-            bag.importJSON(props.getJSONPathValue());
+            graph.importJSON(props.getJSONPathValue());
         } catch (Exception ex) {
-            Logger.getLogger(BAG.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(Graph.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
 
     /**
-     * Procesa un evento recibido, actualizando el BAG o creando uno nuevo
+     * Procesa un evento recibido, actualizando el grafo o creando uno nuevo
      *
      * @param eventMap evento recibido
-     * @param markovNodes
-     * @param markov
-     * @param markovID
-     * @param probMarkov
-     * @param done
-     * @param attack
+     * @param nodes nodos involucrados en el ataque
+     * @param markovID ID de la cadena que lleva el evento
+     * @param infoAtt otros datos sobre el ataque
+     * @param probMarkov probabilidad de estar en el estado que dice la cadena
+     * @param done porcentaje del ataque realizado
+     * @param attack nombre del ataque
      */
     public void processEvent(HashMap<String, Object> eventMap, ArrayList<String> nodes, int markovID,
             double probMarkov, double done, HashMap<String, Object> infoAtt, String attack) {
 
         try {
-            if (bagList.isEmpty()) {
-                startNewBAG();
-                BAG bag = bagList.get(bagList.size() - 1);
-                bag.setMarkovID(markovID);
-                bag.setPosition((String) eventMap.get("node"), markovID, bagList, nodes, probMarkov, done,
-                        infoAtt, attack);
+            if (graphList.isEmpty()) {
+                startNewGraph();
+                Graph graph = graphList.get(graphList.size() - 1);
+                graph.setMarkovID(markovID);
+                graph.setPosition((String) eventMap.get("node"), markovID, graphList, nodes, probMarkov, done, infoAtt, attack);
 
             } else {
                 boolean flag = false;
-                for (BAG bag : bagList) {
-                    if (bag.getMarkovID() == markovID) {
-                        bag.setPosition((String) eventMap.get("node"), markovID, bagList, nodes, probMarkov,
-                                done, infoAtt, attack);
+                for (Graph graph : graphList) {
+                    if (graph.getMarkovID() == markovID) {
+                        graph.setPosition((String) eventMap.get("node"), markovID, graphList, nodes, probMarkov, done, infoAtt, attack);
                         flag = true;
                         break;
                     }
                 }
                 if (!flag) {
-                    startNewBAG();
-                    BAG bag = bagList.get(bagList.size() - 1);
-                    bag.setMarkovID(markovID);
-                    bag.setPosition((String) eventMap.get("node"), markovID, bagList, nodes, probMarkov, done,
-                            infoAtt, attack);
+                    startNewGraph();
+                    Graph graph = graphList.get(graphList.size() - 1);
+                    graph.setMarkovID(markovID);
+                    graph.setPosition((String) eventMap.get("node"), markovID, graphList, nodes, probMarkov, done, infoAtt, attack);
                 }
             }
 
@@ -90,18 +87,18 @@ public class Dharma {
      * Elimina los ficheros JSON de grafos eliminados
      */
     public static void deleteFolder() {
-        File folder = new File(props.getBagVisualizatorPathValue() + "/public");
+        File folder = new File(props.getGraphVisualizatorPathValue() + "/public");
         File[] files = folder.listFiles();
-        ArrayList<BAG> visibleBagList = new ArrayList<>();
+        ArrayList<Graph> visibleGraphList = new ArrayList<>();
         ArrayList<Integer> existingGraphs = new ArrayList<>();
         String nombre;
         int id;
 
         existingGraphs.add(0);
-        for (BAG bag : bagList) {
+        for (Graph graph : graphList) {
 
-            existingGraphs.add(bag.getMarkovID());
-            visibleBagList.add(bag);
+            existingGraphs.add(graph.getMarkovID());
+            visibleGraphList.add(graph);
         }
 
         if (files != null) {
@@ -116,28 +113,26 @@ public class Dharma {
     }
 
     /**
-     * Elimina el BAG seleccionado
+     * Elimina el grafo seleccionado
      *
-     * @param id identificador del grafo
+     * @param id identificador de la cadena HMM que generó el grafo
      */
-    public void removeBAG(int id) {
+    public void removeGraph(int id) {
         try {
-            for (BAG bag : bagList) {
-                // System.out.println(bag.getMarkovID());
-                // System.out.println(id);
-                if (bag.getMarkovID() == id) {
-                    bagList.remove(bag);
+            for (Graph graph : graphList) {
+                if (graph.getMarkovID() == id) {
+                    graphList.remove(graph);
                     break;
                 }
             }
-            for (BAG bag : bagList) {
-                bag.exportIndividualJSON(bag.getMarkovID());
+            for (Graph graph : graphList) {
+                graph.exportIndividualJSON(graph.getMarkovID());
             }
 
-            if (bagList.isEmpty()) {
-                BAG.exportCleanJSON();
+            if (graphList.isEmpty()) {
+                Graph.exportCleanJSON();
             } else {
-                bagList.get(0).exportCompleteJSON(bagList);
+                graphList.get(0).exportCompleteJSON(graphList);
             }
             deleteFolder();
 

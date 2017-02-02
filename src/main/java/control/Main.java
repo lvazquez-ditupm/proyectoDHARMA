@@ -1,13 +1,13 @@
 package control;
 
 import communications.SECEventReceiver;
-import core.BAG;
+import core.Graph;
 import communications.LogReceiver;
 import communications.SyslogCreator;
 import utils.ActivePeriods;
 
 /**
- * This class starts the system
+ * This class starts the DHARMA system
  *
  * @author UPM (member of DHARMA Development Team) (http://dharma.inf.um.es)
  * @version 1.0
@@ -23,7 +23,7 @@ public class Main {
 
     public static void main(String[] args) {
         dharma = new Dharma();
-        BAG.exportCleanJSON();
+        Graph.exportCleanJSON();
         markovController = new MarkovController();
         eventReceiver = new SECEventReceiver();
         new Thread(eventReceiver).start();

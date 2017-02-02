@@ -21,7 +21,7 @@ def tsusen():
 def social():
 	ps = subprocess.Popen('ps -ef | grep parsexcel.py', stdout=subprocess.PIPE, shell=True)
 	(out, err) = ps.communicate()
-	if -1 == -1:
+	if out.find("python parsexcel.py") == -1:
 		print 'Arrancando sensor social'
 		os.chdir(location+"/sensors/social")
 		subprocess.Popen('python parsexcel.py', shell=True)
@@ -30,14 +30,26 @@ def nodeJS():
 	ps = subprocess.Popen('ps -ef | grep node', stdout=subprocess.PIPE, shell=True)
 	(out, err) = ps.communicate()
 	if out.find("node ./bin/www") == -1:
-		os.chdir(location+'/BAGvisualization')
+		os.chdir(location+'/GraphVisualization')
 		print 'Arrancando NodeJS'
 		subprocess.Popen('npm start', shell=True)
 
-SEC()
-tsusen()
-social()
-nodeJS()
+def ubertooth():
+	ps = subprocess.Popen('ps -ef | grep ubertooth.py', stdout=subprocess.PIPE, shell=True)
+	(out, err) = ps.communicate()
+	print out
+	print ""
+	print out.find("python ubertooth.py")
+	if out.find("python ubertooth.py") == -1:
+		print 'Arrancando sensor Bluetooth'
+		os.chdir(location+"/sensors/bluetooth")
+		subprocess.Popen('python ubertooth.py', shell=True)
+
+#SEC()
+#tsusen()
+#social()
+#nodeJS()
+ubertooth()
 
 
 

@@ -26,7 +26,6 @@ public class JSONGraphParser {
 
         HashMap<String, String> exportedNodes = new HashMap<>();
         HashSet<String[]> exportedEdges = new HashSet<>();
-        HashMap<String, Double> exportedWeights = new HashMap<>();
         HashMap<String, Object> parsedGraph = new HashMap<>();
 
         Map jsonMap = new Gson().fromJson(json, Map.class);
@@ -55,28 +54,21 @@ public class JSONGraphParser {
 
             String source = "";
             String target = "";
-            Double weight = 0.0;
 
             for (String edgeElement : edge.split(", ")) {
                 String[] item = edgeElement.split("=");
                 if ("source".equals(item[0])) {
                     source = exportedNodes.get(item[1]);
-                } else if ("target".equals(item[0])) {
-                    target = exportedNodes.get(item[1]);
                 } else {
-                    weight = Double.parseDouble(item[1]);
-                }
+                    target = exportedNodes.get(item[1]);
+                } 
             }
 
             exportedEdges.add(new String[]{source, target});
-            exportedWeights.put(source + "-" + target, weight);
-
-            //System.out.println(source + " ---(" + weight + ")---> " + target);
         }
 
         parsedGraph.put("nodes", exportedNodes);
         parsedGraph.put("edges", exportedEdges);
-        parsedGraph.put("weights", exportedWeights);
 
         return parsedGraph;
     }

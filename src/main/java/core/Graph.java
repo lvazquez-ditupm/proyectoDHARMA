@@ -25,9 +25,9 @@ import utils.DharmaProperties;
  * @author UPM (member of DHARMA Development Team) (http://dharma.inf.um.es)
  * @version 1.0
  */
-public class BAG {
+public class Graph {
 
-    private ListenableDirectedWeightedGraph<String, DefaultEdge> bag;
+    private ListenableDirectedGraph<String, DefaultEdge> graph;
     private String selectedNode;
     private double probMarkov;
     private double done;
@@ -42,10 +42,10 @@ public class BAG {
      * Crea un grafo acíclico bayesiano
      *
      */
-    public BAG() {
+    public Graph() {
         phaseHistory = new ArrayList<>();
         markovNodes = new ArrayList<>();
-        bag = new ListenableDirectedWeightedGraph<>(DefaultWeightedEdge.class);
+        graph = new ListenableDirectedWeightedGraph<>(DefaultWeightedEdge.class);
     }
 
     /**
@@ -56,38 +56,37 @@ public class BAG {
      * @param next hashmap de vértices posteriores con sus pesos
      */
     public void addNode(String node, HashMap<String, Double> previous, HashMap<String, Double> next) {
-        bag.addVertex(node);
+        graph.addVertex(node);
         Iterator it = previous.entrySet().iterator();
         while (it.hasNext()) {
             Map.Entry e = (Map.Entry) it.next();
-            bag.setEdgeWeight(bag.addEdge(e.getKey().toString(), node), (double) e.getValue());
+            graph.setEdgeWeight(graph.addEdge(e.getKey().toString(), node), (double) e.getValue());
         }
         if (next != null) {
             it = next.entrySet().iterator();
             while (it.hasNext()) {
                 Map.Entry e = (Map.Entry) it.next();
-                bag.setEdgeWeight(bag.addEdge(node, e.getKey().toString()), (double) e.getValue());
+                graph.setEdgeWeight(graph.addEdge(node, e.getKey().toString()), (double) e.getValue());
             }
         }
     }
 
-    /**
-     * Elimina un nodo del grafo
-     *
-     * @param node Nodo a eliminar
-     */
-    public void deleteNode(String node) {
-        bag.removeVertex(node);
-    }
 
     /**
      * Establece la posición en el grafo
      *
      * @param node nodo a establecer la posición
+     * @param markovID ID de la cadena que lleva este grafo
+     * @param graphs lista con todos los grafos
+     * @param nodes nodos relacionados con el ataque
+     * @param probMarkov probabilidad de estar en el estado que dice la cadena
+     * @param done porcentaje del ataque completado
+     * @param infoAtt informacion relacionada con el ataque
+     * @param attack nombre del ataque
      */
-    public void setPosition(String node, int position, ArrayList<BAG> bags, ArrayList<String> nodes, double probMarkov,
+    public void setPosition(String node, int markovID, ArrayList<Graph> graphs, ArrayList<String> nodes, double probMarkov,
             double done, HashMap<String, Object> infoAtt, String attack) throws Exception {
-        if (!bag.containsVertex(node)) {
+        if (!graph.containsVertex(node)) {
             throw new Exception("Nodo no existente en la red bayesiana");
         }
 
@@ -118,41 +117,23 @@ public class BAG {
                 this.markovNodes.add(item);
             } else if (item.equals(node)) {
                 flag = true;
-            } else {
-                continue;
             }
         }
 
         try {
 
-            exportIndividualJSON(position);
-            exportCompleteJSON(bags);
+            exportIndividualJSON(markovID);
+            exportCompleteJSON(graphs);
 
-        } catch (Exception ex) {
-            Logger.getLogger(BAG.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (FileNotFoundException | UnsupportedEncodingException ex) {
+            Logger.getLogger(Graph.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
 
-    /**
-     * Devuelve el estado del nodo
-     *
-     * @param node nodo
-     * @return estado
-     */
-    public String getNodeStatus(String node) {
-        if (node.equals(this.getPosition())) {
-            return "current";
-        } else if (getMarkovNodes().contains(node)) {
-            return "next";
-        } else if (this.getPhaseHistory().contains(node)) {
-            return "previous";
-        } else {
-            return "none";
-        }
-    }
+
 
     /**
-     * Devuelve los nodos previstos por el HMM
+     * Devuelve los nodos involucrados en el ataque
      *
      * @return lista de nodos
      */
@@ -179,28 +160,6 @@ public class BAG {
     }
 
     /**
-     * Elimina todos los nodos posteriores al dado, convirtiéndose este en el
-     * actual
-     *
-     * @param node nodo actual
-     */
-    public void deleteFrom(String node) {
-
-        selectedNode = node;
-
-        boolean deleteFlag = false;
-
-        for (int i = 0; i < phaseHistory.size(); i++) {
-            if (deleteFlag) {
-                phaseHistory.remove(i);
-            } else if (phaseHistory.get(i).equals(node)) {
-                deleteFlag = true;
-            }
-        }
-
-    }
-
-    /**
      * Genera el grafo a partir de un fichero JSON
      *
      * @param file ruta al fichero
@@ -210,7 +169,6 @@ public class BAG {
         HashMap<String, Object> parsedGraph;
         Map<String, HashMap> nodes;
         HashSet<String[]> edges;
-        Map<String, Double> weights;
         JSONGraphParser jgp = new JSONGraphParser();
         String cadena;
         FileReader f = new FileReader(file);
@@ -222,27 +180,26 @@ public class BAG {
 
         nodes = (Map<String, HashMap>) parsedGraph.get("nodes");
         edges = (HashSet<String[]>) parsedGraph.get("edges");
-        weights = (Map<String, Double>) parsedGraph.get("weights");
 
         for (String node : nodes.values().toArray(new String[0])) {
-            bag.addVertex(node);
+            graph.addVertex(node);
         }
 
         for (String[] edge : edges) {
-            bag.setEdgeWeight(bag.addEdge(edge[0], edge[1]), weights.get(edge[0] + "-" + edge[1]));
+            graph.addEdge(edge[0], edge[1]);
         }
     }
 
     /**
      * Exporta el grafo de un ataque a un fichero JSON
      *
-     * @param position ID del BAG
+     * @param position ID del grafo
      */
     public void exportIndividualJSON(int position) throws FileNotFoundException, UnsupportedEncodingException {
         JSONGenerator jsonGen = new JSONGenerator();
-        String json = jsonGen.individualGenerator(bag, selectedNode, phaseHistory, markovNodes, position, probMarkov,
+        String json = jsonGen.individualGenerator(graph, selectedNode, phaseHistory, markovNodes, position, probMarkov,
                 done, infoAtt, attack);
-        PrintWriter writer = new PrintWriter(props.getBagVisualizatorPathValue() + "/public/datos" + position + ".json",
+        PrintWriter writer = new PrintWriter(props.getGraphVisualizatorPathValue() + "/public/datos" + position + ".json",
                 "UTF-8");
         writer.println(json);
         writer.close();
@@ -251,9 +208,9 @@ public class BAG {
     /**
      * Exporta el grafo combinado a un fichero JSON
      *
-     * @param bags distintos BAG
+     * @param graphs distintos grafos
      */
-    public void exportCompleteJSON(ArrayList<BAG> bags) throws FileNotFoundException, UnsupportedEncodingException {
+    public void exportCompleteJSON(ArrayList<Graph> graphs) throws FileNotFoundException, UnsupportedEncodingException {
         JSONGenerator jsonGen = new JSONGenerator();
         ArrayList<String> selectedNodes = new ArrayList<>();
         ArrayList<ArrayList<String>> phaseHistories = new ArrayList<>();
@@ -263,50 +220,53 @@ public class BAG {
         ArrayList<String> attacks = new ArrayList<>();
         ArrayList<Integer> ids = new ArrayList<>();
 
-        for (BAG bagItem : bags) {
+        for (Graph graphItem : graphs) {
 
-            selectedNodes.add(bagItem.getPosition());
-            phaseHistories.add(bagItem.getHistory());
-            markovNodes_.add(bagItem.getMarkovNodes());
-            probsMarkov.add(bagItem.getProbMarkov());
-            doneList.add(bagItem.getDone());
-            attacks.add(bagItem.getAttack());
-            ids.add(bagItem.getMarkovID());
+            selectedNodes.add(graphItem.getPosition());
+            phaseHistories.add(graphItem.getHistory());
+            markovNodes_.add(graphItem.getMarkovNodes());
+            probsMarkov.add(graphItem.getProbMarkov());
+            doneList.add(graphItem.getDone());
+            attacks.add(graphItem.getAttack());
+            ids.add(graphItem.getMarkovID());
 
         }
 
-        if (bags.isEmpty()) {
+        if (graphs.isEmpty()) {
             try {
-                BAG bag_ = new BAG();
-                bag_.importJSON(props.getJSONPathValue());
-                bag = bag_.getBag();
+                Graph graph_ = new Graph();
+                graph_.importJSON(props.getJSONPathValue());
+                graph = graph_.getGraph();
             } catch (Exception ex) {
-                Logger.getLogger(BAG.class.getName()).log(Level.SEVERE, null, ex);
+                Logger.getLogger(Graph.class.getName()).log(Level.SEVERE, null, ex);
             }
         }
 
-        String json = jsonGen.totalGenerator(bag, selectedNodes, markovNodes_, phaseHistories, probsMarkov, doneList,
+        String json = jsonGen.totalGenerator(graph, selectedNodes, markovNodes_, phaseHistories, probsMarkov, doneList,
                 attacks, ids);
-        PrintWriter writer = new PrintWriter(props.getBagVisualizatorPathValue() + "/public/datos0.json", "UTF-8");
+        PrintWriter writer = new PrintWriter(props.getGraphVisualizatorPathValue() + "/public/datos0.json", "UTF-8");
         writer.println(json);
         writer.close();
     }
 
+    /**
+     * Genera un JSON común conun grafo en blanco y borra los demás JSON
+     */
     public static void exportCleanJSON() {
         try {
-            BAG bag = new BAG();
+            Graph graph = new Graph();
             Dharma.deleteFolder();
-            bag.exportCompleteJSON(new ArrayList<BAG>());
+            graph.exportCompleteJSON(new ArrayList<Graph>());
         } catch (FileNotFoundException | UnsupportedEncodingException ex) {
-            Logger.getLogger(BAG.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(Graph.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
 
     /*
 	 * Otros getters y setters
      */
-    public void setBag(ListenableDirectedWeightedGraph<String, DefaultEdge> bag) {
-        this.bag = bag;
+    public void setGraph(ListenableDirectedWeightedGraph<String, DefaultEdge> graph) {
+        this.graph = graph;
     }
 
     public void setSelectedNode(String selectedNode) {
@@ -317,8 +277,8 @@ public class BAG {
         this.markovID = markovID;
     }
 
-    public ListenableDirectedWeightedGraph<String, DefaultEdge> getBag() {
-        return bag;
+    public ListenableDirectedGraph<String, DefaultEdge> getGraph() {
+        return graph;
     }
 
     public ArrayList<String> getPhaseHistory() {

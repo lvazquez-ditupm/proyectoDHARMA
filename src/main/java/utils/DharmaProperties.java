@@ -23,7 +23,7 @@ public class DharmaProperties {
     private static String DHARMA_PROPERTIES_FILE;
 
     private static final String DHARMA_PATH_PROP = "dharma.uri";
-    private static final String BAG_VISUALIZATOR_PATH_PROP = "bag.visualizator.uri";
+    private static final String GRAPH_VISUALIZATOR_PATH_PROP = "graph.visualizator.uri";
     private static final String JSON_PATH_PROP = "json.uri";
     private static final String EVENT_LOG_PATH_PROP = "event.log.uri";
     private static final String DATASET_PATH_PROP = "dataset.uri";
@@ -35,7 +35,7 @@ public class DharmaProperties {
 
     //Valores de los parametros del fichero properties
     private static String DHARMA_PATH_VALUE;
-    private static String BAG_VISUALIZATOR_PATH_VALUE;
+    private static String GRAPH_VISUALIZATOR_PATH_VALUE;
     private static String JSON_PATH_VALUE;
     private static String EVENT_LOG_PATH_VALUE;
     private static String DATASET_PATH_VALUE;
@@ -52,12 +52,12 @@ public class DharmaProperties {
             String configFile = "config_files/dharma.conf";
             String path = this.getClass().getProtectionDomain().getCodeSource().getLocation().getPath();
             path = URLDecoder.decode(path, "UTF-8");
-            DHARMA_PROPERTIES_FILE = (new File(path).getParentFile().getParentFile().getPath() + File.separator + configFile).toString();
+            DHARMA_PROPERTIES_FILE = (new File(path).getParentFile().getParentFile().getPath() + File.separator + configFile);
             File f = new File(DHARMA_PROPERTIES_FILE);
             is = new FileInputStream(f);
             dharmaproperties.load(is);
             DHARMA_PATH_VALUE = dharmaproperties.getProperty(DHARMA_PATH_PROP);
-            BAG_VISUALIZATOR_PATH_VALUE = dharmaproperties.getProperty(BAG_VISUALIZATOR_PATH_PROP);
+            GRAPH_VISUALIZATOR_PATH_VALUE = dharmaproperties.getProperty(GRAPH_VISUALIZATOR_PATH_PROP);
             JSON_PATH_VALUE = dharmaproperties.getProperty(JSON_PATH_PROP);
             EVENT_LOG_PATH_VALUE = dharmaproperties.getProperty(EVENT_LOG_PATH_PROP);
             DATASET_PATH_VALUE = dharmaproperties.getProperty(DATASET_PATH_PROP);
@@ -86,8 +86,8 @@ public class DharmaProperties {
             System.out.println("File \"" + DHARMA_PATH_PROP
                     + "\" not defined.");
         }
-        if (null == BAG_VISUALIZATOR_PATH_VALUE) {
-            System.out.println("Property \"" + BAG_VISUALIZATOR_PATH_PROP
+        if (null == GRAPH_VISUALIZATOR_PATH_VALUE) {
+            System.out.println("Property \"" + GRAPH_VISUALIZATOR_PATH_PROP
                     + "\" not defined.");
         }
         if (null == JSON_PATH_VALUE) {
@@ -128,8 +128,8 @@ public class DharmaProperties {
         return DHARMA_PATH_VALUE;
     }
 
-    public String getBagVisualizatorPathValue() {
-        return BAG_VISUALIZATOR_PATH_VALUE;
+    public String getGraphVisualizatorPathValue() {
+        return GRAPH_VISUALIZATOR_PATH_VALUE;
     }
 
     public String getJSONPathValue() {

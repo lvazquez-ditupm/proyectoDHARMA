@@ -1,6 +1,6 @@
 package control;
 
-import core.BAG;
+import core.Graph;
 
 /**
  * This class represents the controller which select the actions related to a
@@ -11,15 +11,15 @@ import core.BAG;
  */
 public class ActionController {
 
-    //To Do
+    //TODO
     public ActionController() {
     }
 
-    public static void doActions(BAG bag, String node) {
+    public static void doActions(Graph graph, String node) {
 
     }
 
-    public static void undoActions(BAG bag, String node) {
+    public static void undoActions(Graph graph, String node) {
 
     }
 

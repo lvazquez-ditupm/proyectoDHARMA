@@ -1,0 +1,69 @@
+Wed Feb  1 13:33:38 2017: SEC (Simple Event Correlator) 2.7.10
+Wed Feb  1 13:33:38 2017: Reading configuration from /home/saturno/NetBeansProjects/proyectoDHARMA/sensors/SEC/sec.rules
+Wed Feb  1 13:33:38 2017: 34 rules loaded from /home/saturno/NetBeansProjects/proyectoDHARMA/sensors/SEC/sec.rules
+Wed Feb  1 13:33:38 2017: No --bufsize command line option or --bufsize=0, setting --bufsize to 1
+Wed Feb  1 13:33:38 2017: Opening input file /home/saturno/NetBeansProjects/proyectoDHARMA/sensors/SEC/asdf.log
+Wed Feb  1 13:33:38 2017: Opening input file /var/log/syslog
+Wed Feb  1 13:33:38 2017: Variación en el riesgo de RRHH (7.625)
+Wed Feb  1 13:33:38 2017: HRScanner: Detectada anomalía de RRHH (Riesgo: 7.625)
+Wed Feb  1 13:33:38 2017: Creating event 'HR_ANOMALY'
+Wed Feb  1 13:33:38 2017: Creating context 'HR_ANOMALY'
+Wed Feb  1 13:35:33 2017: SIGTERM received: shutting down SEC
+Wed Feb  1 13:35:39 2017: SEC (Simple Event Correlator) 2.7.10
+Wed Feb  1 13:35:39 2017: Reading configuration from /home/saturno/NetBeansProjects/proyectoDHARMA/sensors/SEC/sec.rules
+Wed Feb  1 13:35:39 2017: 34 rules loaded from /home/saturno/NetBeansProjects/proyectoDHARMA/sensors/SEC/sec.rules
+Wed Feb  1 13:35:39 2017: No --bufsize command line option or --bufsize=0, setting --bufsize to 1
+Wed Feb  1 13:35:39 2017: Opening input file /home/saturno/NetBeansProjects/proyectoDHARMA/sensors/SEC/asdf.log
+Wed Feb  1 13:35:39 2017: Opening input file /var/log/syslog
+Wed Feb  1 13:35:39 2017: Variación en el riesgo de RRHH (7.625)
+Wed Feb  1 13:35:39 2017: HRScanner: Detectada anomalía de RRHH (Riesgo: 7.625)
+Wed Feb  1 13:35:39 2017: Creating event 'HR_ANOMALY'
+Wed Feb  1 13:35:39 2017: Creating context 'HR_ANOMALY'
+Wed Feb  1 13:36:42 2017: SIGTERM received: shutting down SEC
+Wed Feb  1 13:36:48 2017: SEC (Simple Event Correlator) 2.7.10
+Wed Feb  1 13:36:48 2017: Reading configuration from /home/saturno/NetBeansProjects/proyectoDHARMA/sensors/SEC/sec.rules
+Wed Feb  1 13:36:48 2017: 34 rules loaded from /home/saturno/NetBeansProjects/proyectoDHARMA/sensors/SEC/sec.rules
+Wed Feb  1 13:36:48 2017: No --bufsize command line option or --bufsize=0, setting --bufsize to 1
+Wed Feb  1 13:36:48 2017: Opening input file /home/saturno/NetBeansProjects/proyectoDHARMA/sensors/SEC/asdf.log
+Wed Feb  1 13:36:48 2017: Opening input file /var/log/syslog
+Wed Feb  1 13:36:51 2017: SIGTERM received: shutting down SEC
+Wed Feb  1 13:38:10 2017: SEC (Simple Event Correlator) 2.7.10
+Wed Feb  1 13:38:10 2017: Reading configuration from /home/saturno/NetBeansProjects/proyectoDHARMA/sensors/SEC/sec.rules
+Wed Feb  1 13:38:10 2017: 34 rules loaded from /home/saturno/NetBeansProjects/proyectoDHARMA/sensors/SEC/sec.rules
+Wed Feb  1 13:38:10 2017: No --bufsize command line option or --bufsize=0, setting --bufsize to 1
+Wed Feb  1 13:38:10 2017: Opening input file /home/saturno/NetBeansProjects/proyectoDHARMA/sensors/SEC/asdf.log
+Wed Feb  1 13:38:10 2017: Opening input file /var/log/syslog
+Wed Feb  1 13:38:24 2017: SIGTERM received: shutting down SEC
+Wed Feb  1 13:39:04 2017: SEC (Simple Event Correlator) 2.7.10
+Wed Feb  1 13:39:04 2017: Reading configuration from /home/saturno/NetBeansProjects/proyectoDHARMA/sensors/SEC/sec.rules
+Wed Feb  1 13:39:04 2017: 34 rules loaded from /home/saturno/NetBeansProjects/proyectoDHARMA/sensors/SEC/sec.rules
+Wed Feb  1 13:39:04 2017: No --bufsize command line option or --bufsize=0, setting --bufsize to 1
+Wed Feb  1 13:39:04 2017: Opening input file /home/saturno/NetBeansProjects/proyectoDHARMA/sensors/SEC/asdf.log
+Wed Feb  1 13:39:04 2017: Opening input file /var/log/syslog
+Wed Feb  1 13:46:48 2017: Variación en el riesgo de RRHH (7.625])
+Wed Feb  1 13:46:48 2017: HRScanner: Detectada anomalía de RRHH (Riesgo: 7.625])
+Wed Feb  1 13:46:48 2017: Creating event 'HR_ANOMALY'
+Wed Feb  1 13:46:48 2017: Creating context 'HR_ANOMALY'
+Wed Feb  1 14:06:37 2017: SIGTERM received: shutting down SEC
+Wed Feb  1 14:16:10 2017: SEC (Simple Event Correlator) 2.7.10
+Wed Feb  1 14:16:10 2017: Reading configuration from /home/saturno/NetBeansProjects/proyectoDHARMA/sensors/SEC/sec.rules
+Wed Feb  1 14:16:10 2017: 34 rules loaded from /home/saturno/NetBeansProjects/proyectoDHARMA/sensors/SEC/sec.rules
+Wed Feb  1 14:16:10 2017: No --bufsize command line option or --bufsize=0, setting --bufsize to 1
+Wed Feb  1 14:16:10 2017: Opening input file /home/saturno/NetBeansProjects/proyectoDHARMA/sensors/SEC/asdf.log
+Wed Feb  1 14:16:10 2017: Opening input file /var/log/syslog
+Wed Feb  1 14:16:10 2017: Variación en el riesgo de RRHH (7.625)
+Wed Feb  1 14:16:10 2017: HRScanner: Detectada anomalía de RRHH (Riesgo: 7.625)
+Wed Feb  1 14:16:10 2017: Creating event 'HR_ANOMALY'
+Wed Feb  1 14:16:10 2017: Creating context 'HR_ANOMALY'
+Wed Feb  1 14:16:35 2017: SIGTERM received: shutting down SEC
+Wed Feb  1 14:16:40 2017: SEC (Simple Event Correlator) 2.7.10
+Wed Feb  1 14:16:40 2017: Reading configuration from /home/saturno/NetBeansProjects/proyectoDHARMA/sensors/SEC/sec.rules
+Wed Feb  1 14:16:40 2017: 34 rules loaded from /home/saturno/NetBeansProjects/proyectoDHARMA/sensors/SEC/sec.rules
+Wed Feb  1 14:16:40 2017: No --bufsize command line option or --bufsize=0, setting --bufsize to 1
+Wed Feb  1 14:16:40 2017: Opening input file /home/saturno/NetBeansProjects/proyectoDHARMA/sensors/SEC/asdf.log
+Wed Feb  1 14:16:40 2017: Opening input file /var/log/syslog
+Wed Feb  1 14:17:01 2017: Variación en el riesgo de RRHH (7.625)
+Wed Feb  1 14:17:01 2017: HRScanner: Detectada anomalía de RRHH (Riesgo: 7.625)
+Wed Feb  1 14:17:01 2017: Creating event 'HR_ANOMALY'
+Wed Feb  1 14:17:01 2017: Creating context 'HR_ANOMALY'
+Wed Feb  1 14:18:41 2017: SIGTERM received: shutting down SEC

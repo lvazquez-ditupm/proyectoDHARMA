@@ -8,10 +8,10 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import org.jgrapht.graph.DefaultEdge;
 import org.jgrapht.graph.DefaultWeightedEdge;
-import org.jgrapht.graph.ListenableDirectedWeightedGraph;
+import org.jgrapht.graph.ListenableDirectedGraph;
 
 /**
- * This class generates a JSON according to the BAG
+ * This class generates a JSON according to the graph
  *
  * @author UPM (member of DHARMA Development Team) (http://dharma.inf.um.es)
  * @version 1.0
@@ -22,26 +22,27 @@ public class JSONGenerator {
     }
 
     /**
-     * Genera el JSON a partir del bag, el historial de nodos, el actual y el
+     * Genera el JSON a partir del grafo, el historial de nodos, el actual y el
      * futuro (un ataque)
      *
-     * @param bag grafo
+     * @param graph grafo
      * @param selectedNode nodo actual
      * @param phaseHistory historial de nodos
-     * @param markovNodes nodos siguientes previstos por HMM
-     * @param position ID del ataque
+     * @param nextNodes nodos siguientes previstos por HMM
+     * @param markovID ID de la cadena que lleva el ataque
      * @param probMarkov probabilidad de estar en el punto actual del HMM
      * @param done porcentaje realizado del ataque
+     * @param infoAtt otros datos sobre el ataque
      * @param attack tipo de ataque
      * @return string JSON
      */
-    public String individualGenerator(ListenableDirectedWeightedGraph<String, DefaultEdge> bag, String selectedNode,
-            ArrayList<String> phaseHistory, ArrayList<String> markovNodes, int position, double probMarkov, double done, HashMap<String, Object> infoAtt,
+    public String individualGenerator(ListenableDirectedGraph<String, DefaultEdge> graph, String selectedNode,
+            ArrayList<String> phaseHistory, ArrayList<String> nextNodes, int markovID, double probMarkov, double done, HashMap<String, Object> infoAtt,
             String attack) {
 
         Gson gson = new Gson();
 
-        Set<String> nodes = bag.vertexSet();
+        Set<String> nodes = graph.vertexSet();
         HashMap<String, Number> edgeMap;
         HashMap<String, Object> nodeMap;
 
@@ -74,14 +75,14 @@ public class JSONGenerator {
                 }
             }
 
-            for (int k = 0; k < markovNodes.size(); k++) {
-                if (nodeMap.get("status") == null && markovNodes.get(k).equals(node)) {
+            for (int k = 0; k < nextNodes.size(); k++) {
+                if (nodeMap.get("status") == null && nextNodes.get(k).equals(node)) {
                     nodeMap.put("status", "markov");
                     break;
                 }
             }
 
-            if (nodeMap.get("status") == null && !markovNodes.contains(node)) {
+            if (nodeMap.get("status") == null && !nextNodes.contains(node)) {
                 nodeMap.put("status", "none");
             }
 
@@ -89,12 +90,11 @@ public class JSONGenerator {
 
             for (String nextCandidate : nodes) {
 
-                if (bag.containsEdge(node, nextCandidate)) {
+                if (graph.containsEdge(node, nextCandidate)) {
                     edgeMap = new HashMap<>();
                     edgeMap.put("source", i);
                     edgeMap.put("target", j);
-                    // edgeMap.put("weight", bag.getEdgeWeight(e)); DESCOMENTAR
-                    // PARA MOSTRAR LOS PESOS DE LOS ENLACES
+                    // edgeMap.put("weight", graph.getEdgeWeight(e)); DESCOMENTAR PARA MOSTRAR LOS PESOS DE LOS ENLACES
                     edgesList.add(edgeMap);
                 }
                 j++;
@@ -108,8 +108,8 @@ public class JSONGenerator {
             pathString += phaseHistory.get(i) + "-";
         }
 
-        for (j = 0; j < markovNodes.size(); j++) {
-            pathString += markovNodes.get(j) + "*-";
+        for (j = 0; j < nextNodes.size(); j++) {
+            pathString += nextNodes.get(j) + "*-";
         }
 
         pathList.add(pathString);
@@ -117,7 +117,7 @@ public class JSONGenerator {
         jsonMap.put("nodes", nodesList);
         jsonMap.put("edges", edgesList);
         jsonMap.put("routes", pathList);
-        jsonMap.put("attackID", position);
+        jsonMap.put("attackID", markovID);
         jsonMap.put("done", done);
         for (String infoAttKey : infoAtt.keySet()) {
             jsonMap.put(infoAttKey, infoAtt.get(infoAttKey));
@@ -128,26 +128,27 @@ public class JSONGenerator {
     }
 
     /**
-     * Genera el JSON a partir del bag, el historial de nodos, el actual y el
-     * futuro (todos los ataques simultánteamente)
+     * Genera el JSON a partir del grafo, el historial de nodos, el actual y el
+     * futuro (con todos los ataques simultánteamente)
      *
-     * @param bag grafo
+     * @param graph grafo
      * @param selectedNodes nodos actuales
      * @param nextNodes nodos siguientes
      * @param probsMarkov probabilidades de estar en el punto actual del HMM
      * @param phaseHistories historiales de nodos
      * @param doneList lista de porcentajes de éxito en ataques
      * @param attacks lista de tipos de ataques
+     * @param ids IDs de las cadenas HMM
      * @return string JSON
      */
-    public String totalGenerator(ListenableDirectedWeightedGraph<String, DefaultEdge> bag,
+    public String totalGenerator(ListenableDirectedGraph<String, DefaultEdge> graph,
             ArrayList<String> selectedNodes, ArrayList<ArrayList<String>> nextNodes,
             ArrayList<ArrayList<String>> phaseHistories, ArrayList<Double> probsMarkov, ArrayList<Double> doneList,
             ArrayList<String> attacks, ArrayList<Integer> ids) {
 
         Gson gson = new Gson();
 
-        Set<String> nodes = bag.vertexSet();
+        Set<String> nodes = graph.vertexSet();
         HashMap<String, Number> edgeMap;
         HashMap<String, Object> nodeMap;
 
@@ -215,8 +216,8 @@ public class JSONGenerator {
 
             for (String nextCandidate : nodes) {
 
-                if (bag.containsEdge(node, nextCandidate)) {
-                    DefaultWeightedEdge e = (DefaultWeightedEdge) bag.getEdge(node, nextCandidate);
+                if (graph.containsEdge(node, nextCandidate)) {
+                    DefaultWeightedEdge e = (DefaultWeightedEdge) graph.getEdge(node, nextCandidate);
                     edgeMap = new HashMap<>();
                     edgeMap.put("source", i);
                     edgeMap.put("target", j);
@@ -242,8 +243,7 @@ public class JSONGenerator {
             historyList.add(pathString);
         }
 
-        ArrayList<HashMap> _nodesList = new ArrayList<>(nodesList.stream().distinct().collect(Collectors.toList())); // Eliminar
-        // duplicados
+        ArrayList<HashMap> _nodesList = new ArrayList<>(nodesList.stream().distinct().collect(Collectors.toList())); // Eliminar duplicados
 
         jsonMap.put("nodes", _nodesList);
         jsonMap.put("edges", edgesList);

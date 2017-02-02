@@ -102,7 +102,7 @@ public class MarkovController {
         log = log.substring(log.indexOf(":") + 2);
         int id = Integer.parseInt(log.split("=")[1]);
         //System.out.println("Eliminado ataque "+id);
-        dharma.removeBAG(id);
+        dharma.removeGraph(id);
 
     }
 
