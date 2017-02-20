@@ -28,45 +28,38 @@ import utils.DharmaProperties;
 public class BAG {
 
     private ListenableDirectedGraph<String, DefaultEdge> bag;
-    private String selectedNode;
+    private String currentNode;
     private double probMarkov;
     private double done;
     private HashMap<String, Object> infoAtt;
     private String attack;
-    private ArrayList<String> phaseHistory;
-    private ArrayList<String> markovNodes;
+    private ArrayList<String> pastNodes;
+    private ArrayList<String> futureNodes;
     private int markovID;
     private final DharmaProperties props = new DharmaProperties();
-    private BayesNetworkManager bayesNet; 
+    private BayesNetworkManager bayesNet;
 
     /**
      * Crea un grafo acíclico bayesiano
      *
      */
-    public BAG() {
-        phaseHistory = new ArrayList<>();
-        markovNodes = new ArrayList<>();
+    public BAG(int markovID) {
+        this.markovID = markovID;
+        pastNodes = new ArrayList<>();
+        futureNodes = new ArrayList<>();
         bag = new ListenableDirectedGraph<>(DefaultEdge.class);
-        bayesNet= new BayesNetworkManager(markovID);
+        try {
+            importJSON(props.getJSONPathValue());
+        } catch (IOException ex) {
+            Logger.getLogger(BAG.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        bayesNet = new BayesNetworkManager(markovID);
     }
 
-    /**
-     * Añade un nodo al grafo
-     *
-     * @param node nuevo vértice
-     *
-     */
-    public void addNode(String node, HashMap<String, Double> previous, HashMap<String, Double> next) {
-        bag.addVertex(node);        
-    }
-
-    /**
-     * Elimina un nodo del grafo
-     *
-     * @param node Nodo a eliminar
-     */
-    public void deleteNode(String node) {
-        bag.removeVertex(node);
+    public BAG() {
+        pastNodes = new ArrayList<>();
+        futureNodes = new ArrayList<>();
+        bag = new ListenableDirectedGraph<>(DefaultEdge.class);
     }
 
     /**
@@ -80,22 +73,21 @@ public class BAG {
             throw new Exception("Nodo no existente en la red bayesiana");
         }
 
-        this.phaseHistory = new ArrayList<>();
-        this.markovNodes.clear();
+        this.pastNodes = new ArrayList<>();
+        this.futureNodes.clear();
         this.probMarkov = probMarkov;
         this.done = done;
         this.attack = attack;
         this.infoAtt = infoAtt;
 
-        selectedNode = node;
+        currentNode = node;
         bayesNet.eventOcurred(node);
         bayesNet.updateProbs(id);
-        
 
         Iterator<String> it = nodes.iterator();
         while (it.hasNext()) {
             String item = it.next();
-            this.phaseHistory.add(item);
+            this.pastNodes.add(item);
             if (item.equals(node)) {
                 break;
             }
@@ -107,11 +99,9 @@ public class BAG {
         while (it.hasNext()) {
             String item = it.next();
             if (flag) {
-                this.markovNodes.add(item);
+                this.futureNodes.add(item);
             } else if (item.equals(node)) {
                 flag = true;
-            } else {
-                continue;
             }
         }
 
@@ -132,64 +122,15 @@ public class BAG {
      * @return estado
      */
     public String getNodeStatus(String node) {
-        if (node.equals(this.getPosition())) {
+        if (node.equals(this.getCurrentNode())) {
             return "current";
-        } else if (getMarkovNodes().contains(node)) {
+        } else if (getFutureNodes().contains(node)) {
             return "next";
         } else if (this.getPhaseHistory().contains(node)) {
             return "previous";
         } else {
             return "none";
         }
-    }
-
-    /**
-     * Devuelve los nodos previstos por el HMM
-     *
-     * @return lista de nodos
-     */
-    public ArrayList<String> getMarkovNodes() {
-        return markovNodes;
-    }
-
-    /**
-     * Devuelve el nodo actual
-     *
-     * @return nombre del nodo
-     */
-    public String getPosition() {
-        return selectedNode;
-    }
-
-    /**
-     * Devuelve la lista de nodos previos
-     *
-     * @return lista de nodos previos
-     */
-    public ArrayList<String> getHistory() {
-        return phaseHistory;
-    }
-
-    /**
-     * Elimina todos los nodos posteriores al dado, convirtiéndose este en el
-     * actual
-     *
-     * @param node nodo actual
-     */
-    public void deleteFrom(String node) {
-
-        selectedNode = node;
-
-        boolean deleteFlag = false;
-
-        for (int i = 0; i < phaseHistory.size(); i++) {
-            if (deleteFlag) {
-                phaseHistory.remove(i);
-            } else if (phaseHistory.get(i).equals(node)) {
-                deleteFlag = true;
-            }
-        }
-
     }
 
     /**
@@ -224,12 +165,13 @@ public class BAG {
      *
      * @param position ID del BAG
      */
-    public void exportIndividualJSON(int position) throws FileNotFoundException, UnsupportedEncodingException {
+    public void exportIndividualJSON(int position)
+            throws FileNotFoundException, UnsupportedEncodingException {
         JSONGenerator jsonGen = new JSONGenerator();
-        String json = jsonGen.individualGenerator(bag, bayesNet, selectedNode, phaseHistory, markovNodes, position, probMarkov,
-                done, infoAtt, attack);
-        PrintWriter writer = new PrintWriter(props.getBagVisualizatorPathValue() + "/public/datos" + position + ".json",
-                "UTF-8");
+        String json = jsonGen.individualGenerator(bag, bayesNet, currentNode, pastNodes,
+                futureNodes, position, probMarkov, done, infoAtt, attack);
+        PrintWriter writer = new PrintWriter(props.getBagVisualizatorPathValue()
+                + "/public/datos" + position + ".json", "UTF-8");
         writer.println(json);
         writer.close();
     }
@@ -239,7 +181,8 @@ public class BAG {
      *
      * @param bags distintos BAG
      */
-    public void exportCompleteJSON(ArrayList<BAG> bags) throws FileNotFoundException, UnsupportedEncodingException {
+    public void exportCompleteJSON(ArrayList<BAG> bags)
+            throws FileNotFoundException, UnsupportedEncodingException {
         JSONGenerator jsonGen = new JSONGenerator();
         ArrayList<String> selectedNodes = new ArrayList<>();
         ArrayList<ArrayList<String>> phaseHistories = new ArrayList<>();
@@ -251,9 +194,9 @@ public class BAG {
 
         for (BAG bagItem : bags) {
 
-            selectedNodes.add(bagItem.getPosition());
-            phaseHistories.add(bagItem.getHistory());
-            markovNodes_.add(bagItem.getMarkovNodes());
+            selectedNodes.add(bagItem.getCurrentNode());
+            phaseHistories.add(bagItem.getPastNodes());
+            markovNodes_.add(bagItem.getFutureNodes());
             probsMarkov.add(bagItem.getProbMarkov());
             doneList.add(bagItem.getDone());
             attacks.add(bagItem.getAttack());
@@ -271,9 +214,10 @@ public class BAG {
             }
         }
 
-        String json = jsonGen.totalGenerator(bag, selectedNodes, markovNodes_, phaseHistories, probsMarkov, doneList,
-                attacks, ids);
-        PrintWriter writer = new PrintWriter(props.getBagVisualizatorPathValue() + "/public/datos0.json", "UTF-8");
+        String json = jsonGen.totalGenerator(bag, selectedNodes, markovNodes_, phaseHistories,
+                probsMarkov, doneList, attacks, ids);
+        PrintWriter writer = new PrintWriter(props.getBagVisualizatorPathValue()
+                + "/public/datos0.json", "UTF-8");
         writer.println(json);
         writer.close();
     }
@@ -289,26 +233,14 @@ public class BAG {
     }
 
     /*
-	 * Otros getters y setters
+    Otros getters y setters
      */
-    public void setBag(ListenableDirectedGraph<String, DefaultEdge> bag) {
-        this.bag = bag;
-    }
-
-    public void setSelectedNode(String selectedNode) {
-        this.selectedNode = selectedNode;
-    }
-
-    public void setMarkovID(int markovID) {
-        this.markovID = markovID;
-    }
-
     public ListenableDirectedGraph<String, DefaultEdge> getBag() {
         return bag;
     }
 
     public ArrayList<String> getPhaseHistory() {
-        return phaseHistory;
+        return pastNodes;
     }
 
     public int getMarkovID() {
@@ -323,11 +255,19 @@ public class BAG {
         return done;
     }
 
-    public HashMap<String, Object> getinfoAtt() {
-        return infoAtt;
-    }
-
     public String getAttack() {
         return attack;
+    }
+
+    public ArrayList<String> getPastNodes() {
+        return pastNodes;
+    }
+
+    public String getCurrentNode() {
+        return currentNode;
+    }
+
+    public ArrayList<String> getFutureNodes() {
+        return futureNodes;
     }
 }

@@ -32,8 +32,10 @@ public class JSONGraphParser {
         HashMap<String, Object> parsedGraph = new HashMap<>();
 
         Map jsonMap = new Gson().fromJson(json, Map.class);
-        String[] nodes = jsonMap.get("nodes").toString().replace("[", " ").replace("}]", "").replace(" {", "").split("},");
-        String[] edges = jsonMap.get("edges").toString().replace("[", " ").replace("}]", "").replace(" {", "").split("},");
+        String[] nodes = jsonMap.get("nodes").toString().replace("[", " ").
+                replace("}]", "").replace(" {", "").split("},");
+        String[] edges = jsonMap.get("edges").toString().replace("[", " ").
+                replace("}]", "").replace(" {", "").split("},");
 
         for (String node : nodes) {
 

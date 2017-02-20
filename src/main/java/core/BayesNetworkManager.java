@@ -87,7 +87,8 @@ public class BayesNetworkManager {
         for (String node : nodes) {
             if (net.isEvidence(node)) {
                 for (String child : net.getChildIds(node)) {
-                    if (net.isEvidence(child) && net.getNodeValue(child)[1] == 1.0 && net.getNodeValue(node)[1] == 1.0) {
+                    if (net.isEvidence(child) && net.getNodeValue(child)[1] == 1.0
+                            && net.getNodeValue(node)[1] == 1.0) {
                         for (String child_ : net.getChildIds(node)) {
                             if (!net.isEvidence(child_)) {
                                 net.setEvidence(child_, "False");

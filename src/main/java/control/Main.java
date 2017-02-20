@@ -2,8 +2,6 @@ package control;
 
 import communications.LogReceiver;
 import core.BAG;
-import core.BayesNetworkManager;
-import java.util.HashMap;
 
 
 /**
@@ -19,7 +17,7 @@ public class Main {
     public static void main(String[] args) {
 
         BAG.exportCleanJSON();
-        logReceiver = new LogReceiver(Integer.parseInt(args[1]), args[0]);
-        logReceiver.start();  
+        //logReceiver = new LogReceiver(Integer.parseInt(args[1]), args[0]);
+        //logReceiver.start();  
     }
 }

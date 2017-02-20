@@ -20,8 +20,8 @@ public class LogReceiver {
     boolean received_alert = false;
     String log_received;
     Dharma dharma = new Dharma();
-    
-    public LogReceiver(int UDPport, String ip){
+
+    public LogReceiver(int UDPport, String ip) {
         try {
             socketUDP = new DatagramSocket(UDPport, InetAddress.getByName(ip));
         } catch (UnknownHostException | SocketException e) {
@@ -36,12 +36,13 @@ public class LogReceiver {
         new Thread(u).start();
     }
 
-
     /**
      * Recibe datos del socket UDP y los gestiona
      */
     class ReceiveSocketUDPAlert implements Runnable {
-    	MarkovController markovController = new MarkovController();
+
+        MarkovController markovController = new MarkovController();
+
         @Override
         public void run() {
             try {
@@ -49,18 +50,19 @@ public class LogReceiver {
                 while (true) {
                     DatagramPacket packet = new DatagramPacket(buf, buf.length);
                     socketUDP.receive(packet);
-                    String receivedLog = new String(packet.getData(), packet.getOffset(), packet.getLength());
+                    String receivedLog = new String(packet.getData(),
+                            packet.getOffset(), packet.getLength());
                     if (!receivedLog.equals("")) {
-                    	System.out.println(receivedLog);
+                        System.out.println(receivedLog);
                         if (receivedLog.contains("Finished attack")) {
                             markovController.delete(receivedLog);
                         } else {
-                        	markovController.parse(receivedLog);
+                            markovController.parse(receivedLog);
                         }
                     }
                 }
             } catch (Exception e) {
-            	System.err.println(e);
+                System.err.println(e);
             }
         }
     }

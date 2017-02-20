@@ -36,16 +36,18 @@ public class DharmaProperties {
             String configFile = "dharma.conf";
             String path = this.getClass().getProtectionDomain().getCodeSource().getLocation().getPath();
             path = URLDecoder.decode(path, "UTF-8");
-            DHARMA_PROPERTIES_FILE = (new File(path).getParentFile().getParentFile().getPath() + File.separator + configFile).toString();
+            DHARMA_PROPERTIES_FILE = (new File(path).getParentFile().getParentFile().getPath()
+                    + File.separator + configFile).toString();
             File f = new File(DHARMA_PROPERTIES_FILE);
             is = new FileInputStream(f);
             dharmaproperties.load(is);
             DHARMA_PATH_VALUE = dharmaproperties.getProperty(DHARMA_PATH_PROP);
             BAG_VISUALIZATOR_PATH_VALUE = dharmaproperties.getProperty(BAG_VISUALIZATOR_PATH_PROP);
             JSON_PATH_VALUE = dharmaproperties.getProperty(JSON_PATH_PROP);
-            
+
         } catch (IOException e) {
-            throw new RuntimeException("Could not read config module config. (File: " + DHARMA_PROPERTIES_FILE + ")", e);
+            throw new RuntimeException("Could not read config module config. (File: "
+                    + DHARMA_PROPERTIES_FILE + ")", e);
         } finally {
             if (null != is) {
                 try {
