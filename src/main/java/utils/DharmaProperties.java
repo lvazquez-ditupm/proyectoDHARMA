@@ -36,7 +36,7 @@ public class DharmaProperties {
             String configFile = "dharma.conf";
             String path = this.getClass().getProtectionDomain().getCodeSource().getLocation().getPath();
             path = URLDecoder.decode(path, "UTF-8");
-            DHARMA_PROPERTIES_FILE = (new File(path).getParentFile().getPath() + File.separator + configFile).toString();
+            DHARMA_PROPERTIES_FILE = (new File(path).getParentFile().getParentFile().getPath() + File.separator + configFile).toString();
             File f = new File(DHARMA_PROPERTIES_FILE);
             is = new FileInputStream(f);
             dharmaproperties.load(is);

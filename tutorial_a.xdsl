@@ -1,0 +1,135 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<!-- This network was created in GeNIe Academic, which can be used for educational and research purposes only -->
+<smile version="1.0" id="Unnamed" numsamples="1000" discsamples="10000">
+	<nodes>
+		<cpt id="Intento_de_intrusion">
+			<state id="False" />
+			<state id="True" />
+			<probabilities>0.5 0.5</probabilities>
+		</cpt>
+		<cpt id="BeEF">
+			<state id="False" />
+			<state id="True" />
+			<parents>Intento_de_intrusion</parents>
+			<probabilities>0.7497570839475178 0.2502429160524822 0.9855155228248321 0.01448447717516788</probabilities>
+		</cpt>
+		<cpt id="Reverse_Shell">
+			<state id="False" />
+			<state id="True" />
+			<parents>BeEF</parents>
+			<probabilities>0.3361028940600177 0.6638971059399823 0.008447064803594917 0.9915529351964051</probabilities>
+		</cpt>
+		<cpt id="Buffer_Overflow">
+			<state id="False" />
+			<state id="True" />
+			<parents>BeEF Intento_de_intrusion</parents>
+			<probabilities>0.02662123703256913 0.9733787629674309 0.4033652198751141 0.5966347801248859 0.6354533252388493 0.3645466747611507 0.6641488681391809 0.3358511318608191</probabilities>
+		</cpt>
+		<cpt id="Sudo">
+			<state id="False" />
+			<state id="True" />
+			<parents>Intento_de_intrusion Reverse_Shell Buffer_Overflow BeEF</parents>
+			<probabilities>0.4665943799910186 0.5334056200089814 0.2464745445629399 0.7535254554370601 0.7919942761327416 0.2080057238672584 0.5009829563031921 0.4990170436968079 0.2072586648686913 0.7927413351313087 0.6302262894357158 0.3697737105642842 0.3315556648065523 0.6684443351934477 0.6728533801604162 0.3271466198395838 0.5654540141263521 0.4345459858736479 0.09303310372348739 0.9069668962765126 0.77751047394899 0.22248952605101 0.2060897214590105 0.7939102785409895 0.9639368103088464 0.03606318969115363 0.0794844343124842 0.9205155656875158 0.6751762157841713 0.3248237842158287 0.9665100569462248 0.03348994305377517</probabilities>
+		</cpt>
+		<cpt id="Acciones_SYSTEM">
+			<state id="False" />
+			<state id="True" />
+			<parents>Sudo</parents>
+			<probabilities>0.5914038267271008 0.4085961732728992 0.8413757481006133 0.1586242518993867</probabilities>
+		</cpt>
+		<cpt id="Filtracion">
+			<state id="False" />
+			<state id="True" />
+			<parents>Sudo Acciones_SYSTEM Reverse_Shell Buffer_Overflow BeEF</parents>
+			<probabilities>0.271654647392892 0.728345352607108 0.3698813824333042 0.6301186175666958 0.2174203657812929 0.7825796342187071 0.1588714947204778 0.8411285052795222 0.8532156462366611 0.1467843537633389 0.4475028873240625 0.5524971126759375 0.4089874718490022 0.5910125281509978 0.4295626362059131 0.5704373637940869 0.5206513539886608 0.4793486460113392 0.1022692376922478 0.8977307623077522 0.3769280625513398 0.6230719374486602 0.22493591702369 0.77506408297631 0.6175966198810993 0.3824033801189007 0.5204546976524378 0.4795453023475622 0.8179671571927615 0.1820328428072385 0.3717808129167419 0.6282191870832581 0.1176327786835724 0.8823672213164276 0.7405912013612211 0.2594087986387789 0.4123268358279266 0.5876731641720734 0.9803177188315344 0.0196822811684656 0.02306148404509079 0.9769385159549092 0.3231965421781715 0.6768034578218285 0.08685189832300133 0.9131481016769987 0.6113381896903666 0.3886618103096334 0.2315558012282602 0.7684441987717398 0.9137415984260342 0.0862584015739658 0.7601271119259787 0.2398728880740213 0.9514068104658069 0.04859318953419312 0.3864665375982378 0.6135334624017622 0.2461282648398208 0.7538717351601792 0.04874283895007281 0.9512571610499272 0.9481813699717694 0.05181863002823062</probabilities>
+		</cpt>
+		<cpt id="Persistencia">
+			<state id="False" />
+			<state id="True" />
+			<parents>Filtracion</parents>
+			<probabilities>0.942381245276112 0.057618754723888 0.7950827585048966 0.2049172414951034</probabilities>
+		</cpt>
+		<cpt id="Denegacion_de_Servicio">
+			<state id="False" />
+			<state id="True" />
+			<parents>Buffer_Overflow Sudo Filtracion Persistencia</parents>
+			<probabilities>0.3328107413515814 0.6671892586484186 0.3471657854862498 0.6528342145137502 0.04960429934691035 0.9503957006530896 0.853251442994266 0.146748557005734 0.6540265669579677 0.3459734330420323 0.9667188217760695 0.03328117822393051 0.8895467911592987 0.1104532088407013 0.2824195907284526 0.7175804092715474 0.1510226434663118 0.8489773565336882 0.8498984606009125 0.1501015393990875 0.7775846497648849 0.2224153502351151 0.5681558527629436 0.4318441472370564 0.1244478215228636 0.8755521784771364 0.6397302922042067 0.3602697077957933 0.6907644717801288 0.3092355282198712 0.09331834089165347 0.9066816591083465</probabilities>
+		</cpt>
+	</nodes>
+	<extensions>
+		<genie version="1.0" app="GeNIe 2.1.1104.0 ACADEMIC" name="Unnamed" faultnameformat="nodestate">
+			<node id="Intento_de_intrusion">
+				<name>Intento_de_intrusion</name>
+				<interior color="e5f6f7" />
+				<outline color="0000bb" />
+				<font color="000000" name="Arial" size="8" />
+				<position>32 333 108 369</position>
+				<barchart active="true" width="128" height="64" />
+			</node>
+			<node id="BeEF">
+				<name>BeEF</name>
+				<interior color="e5f6f7" />
+				<outline color="0000bb" />
+				<font color="000000" name="Arial" size="8" />
+				<position>27 125 103 161</position>
+				<barchart active="true" width="128" height="64" />
+			</node>
+			<node id="Reverse_Shell">
+				<name>Reverse_Shell</name>
+				<interior color="e5f6f7" />
+				<outline color="0000bb" />
+				<font color="000000" name="Arial" size="8" />
+				<position>207 426 283 462</position>
+				<barchart active="true" width="128" height="64" />
+			</node>
+			<node id="Buffer_Overflow">
+				<name>Buffer_Overflow</name>
+				<interior color="e5f6f7" />
+				<outline color="0000bb" />
+				<font color="000000" name="Arial" size="8" />
+				<position>240 42 316 78</position>
+				<barchart active="true" width="128" height="64" />
+			</node>
+			<node id="Sudo">
+				<name>Sudo</name>
+				<interior color="e5f6f7" />
+				<outline color="0000bb" />
+				<font color="000000" name="Arial" size="8" />
+				<position>314 259 390 295</position>
+				<barchart active="true" width="128" height="64" />
+			</node>
+			<node id="Acciones_SYSTEM">
+				<name>Acciones_SYSTEM</name>
+				<interior color="e5f6f7" />
+				<outline color="0000bb" />
+				<font color="000000" name="Arial" size="8" />
+				<position>456 457 532 493</position>
+				<barchart active="true" width="128" height="64" />
+			</node>
+			<node id="Filtracion">
+				<name>Filtracion</name>
+				<interior color="e5f6f7" />
+				<outline color="0000bb" />
+				<font color="000000" name="Arial" size="8" />
+				<position>606 297 682 333</position>
+				<barchart active="true" width="128" height="64" />
+			</node>
+			<node id="Persistencia">
+				<name>Persistencia</name>
+				<interior color="e5f6f7" />
+				<outline color="0000bb" />
+				<font color="000000" name="Arial" size="8" />
+				<position>634 133 710 169</position>
+				<barchart active="true" width="128" height="64" />
+			</node>
+			<node id="Denegacion_de_Servicio">
+				<name>Denegacion_de_Servicio</name>
+				<interior color="e5f6f7" />
+				<outline color="0000bb" />
+				<font color="000000" name="Arial" size="8" />
+				<position>456 33 532 69</position>
+				<barchart active="true" width="128" height="64" />
+			</node>
+		</genie>
+	</extensions>
+</smile>

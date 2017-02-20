@@ -125,8 +125,6 @@ public class Dharma {
 	public void removeBAG(int id) {
 		try {
 			for (BAG bag : bagList) {
-				// System.out.println(bag.getMarkovID());
-				// System.out.println(id);
 				if (bag.getMarkovID() == id) {
 					bagList.remove(bag);
 					break;

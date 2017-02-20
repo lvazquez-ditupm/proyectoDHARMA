@@ -1,0 +1,125 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<smile version="1.0" id="Unnamed" numsamples="1000" discsamples="10000">
+	<nodes>
+		<cpt id="Intento_de_intrusion">
+			<state id="False" />
+			<state id="True" />
+			<probabilities>0.5 0.5</probabilities>
+		</cpt>
+		<cpt id="BeEF">
+			<state id="False" />
+			<state id="True" />
+			<parents>Intento_de_intrusion</parents>
+			<probabilities>0.6282343572044784 0.3717656427955216 0.7090937228084299 0.2909062771915701</probabilities>
+		</cpt>
+		<cpt id="Reverse_Shell">
+			<state id="False" />
+			<state id="True" />
+			<parents>BeEF</parents>
+			<probabilities>0.8610461978010285 0.1389538021989715 0.1228402977470915 0.8771597022529085</probabilities>
+		</cpt>
+		<cpt id="Buffer_Overflow">
+			<state id="False" />
+			<state id="True" />
+			<parents>BeEF Intento_de_intrusion</parents>
+			<probabilities>0.9217118636276211 0.07828813637237886 0.6226072883380983 0.3773927116619017 0.2531101610049962 0.7468898389950038 0.6379396567684105 0.3620603432315895</probabilities>
+		</cpt>
+		<cpt id="Sudo">
+			<state id="False" />
+			<state id="True" />
+			<parents>Intento_de_intrusion Reverse_Shell Buffer_Overflow BeEF</parents>
+			<probabilities>0.556920466781331 0.443079533218669 0.294084046676877 0.705915953323123 0.4342215560732016 0.5657784439267984 0.5119512663939971 0.4880487336060029 0.7366065920027929 0.2633934079972071 0.6027385487774677 0.3972614512225323 0.9045643001163132 0.09543569988368683 0.3955602486104536 0.6044397513895464 0.9917092172708628 0.008290782729137192 0.1214822330644986 0.8785177669355014 0.2240975787732665 0.7759024212267335 0.7698371226037735 0.2301628773962265 0.4063482231982889 0.5936517768017111 0.1484325807424054 0.8515674192575946 0.9217315549145776 0.07826844508542241 0.3372005441424843 0.6627994558575157</probabilities>
+		</cpt>
+		<cpt id="Acciones_SYSTEM">
+			<state id="False" />
+			<state id="True" />
+			<parents>Sudo</parents>
+			<probabilities>0.4710524637504145 0.5289475362495855 0.9970405124749897 0.002959487525010296</probabilities>
+		</cpt>
+		<cpt id="Filtracion">
+			<state id="False" />
+			<state id="True" />
+			<parents>Sudo Acciones_SYSTEM Reverse_Shell Buffer_Overflow BeEF</parents>
+			<probabilities>0.6224188860455687 0.3775811139544313 0.1572806991812904 0.8427193008187096 0.09636230090537667 0.9036376990946233 0.6846371967066047 0.3153628032933953 0.9618940154780226 0.03810598452197744 0.8652384774561221 0.1347615225438779 0.3706998167319288 0.6293001832680712 0.09377154926472919 0.9062284507352708 0.488676522198914 0.511323477801086 0.9477903727341437 0.05220962726585632 0.1044069752027776 0.8955930247972224 0.2715302085999431 0.7284697914000569 0.2890862252389507 0.7109137747610493 0.8461349059207038 0.1538650940792962 0.06611035059389636 0.9338896494061036 0.7791016280007123 0.2208983719992877 0.5134014705392448 0.4865985294607552 0.6051713380607968 0.3948286619392032 0.0880787323927068 0.9119212676072932 0.9071670427155705 0.09283295728442953 0.3299242969366085 0.6700757030633915 0.8948468884110001 0.1051531115889999 0.8939975244944408 0.1060024755055592 0.1322704062873691 0.8677295937126309 0.08859944162830358 0.9114005583716964 0.4921638680421822 0.5078361319578178 0.5855919900540005 0.4144080099459995 0.4051405526342432 0.5948594473657568 0.6369665565915988 0.3630334434084012 0.7313236481076391 0.2686763518923609 0.2137888307850206 0.7862111692149794 0.7340086098490255 0.2659913901509745</probabilities>
+		</cpt>
+		<cpt id="Persistencia">
+			<state id="False" />
+			<state id="True" />
+			<parents>Filtracion</parents>
+			<probabilities>0.7986080262359913 0.2013919737640087 0.00467957812696751 0.9953204218730325</probabilities>
+		</cpt>
+		<cpt id="Denegacion_de_Servicio">
+			<state id="False" />
+			<state id="True" />
+			<parents>Buffer_Overflow Sudo Filtracion Persistencia</parents>
+			<probabilities>0.7556138953805237 0.2443861046194763 0.05428425880369725 0.9457157411963028 0.9978875238879185 0.002112476112081541 0.1286161067126392 0.8713838932873608 0.119781034018428 0.880218965981572 0.5605246470486978 0.4394753529513022 0.8946574420898705 0.1053425579101295 0.2761671801619864 0.7238328198380136 0.5119355046855639 0.4880644953144361 0.5174502471361347 0.4825497528638653 0.6787457446729829 0.3212542553270171 0.2221315511999987 0.7778684488000013 0.6047726422304329 0.3952273577695671 0.06383173469681425 0.9361682653031858 0.366416077448232 0.633583922551768 0.8466388564167499 0.1533611435832501</probabilities>
+		</cpt>
+	</nodes>
+	<extensions>
+		<genie version="1.0" app="SMILE_ACADEMIC@ae53eb94b42a" name="Unnamed" faultnameformat="nodestate">
+			<node id="Intento_de_intrusion">
+				<name>Intento_de_intrusion</name>
+				<interior color="e5f6f7" />
+				<outline color="0000bb" />
+				<font color="000000" name="MS Sans Serif" size="8" />
+				<position>-38 -18 38 18</position>
+			</node>
+			<node id="BeEF">
+				<name>BeEF</name>
+				<interior color="e5f6f7" />
+				<outline color="0000bb" />
+				<font color="000000" name="MS Sans Serif" size="8" />
+				<position>-38 -18 38 18</position>
+			</node>
+			<node id="Reverse_Shell">
+				<name>Reverse_Shell</name>
+				<interior color="e5f6f7" />
+				<outline color="0000bb" />
+				<font color="000000" name="MS Sans Serif" size="8" />
+				<position>-38 -18 38 18</position>
+			</node>
+			<node id="Buffer_Overflow">
+				<name>Buffer_Overflow</name>
+				<interior color="e5f6f7" />
+				<outline color="0000bb" />
+				<font color="000000" name="MS Sans Serif" size="8" />
+				<position>-38 -18 38 18</position>
+			</node>
+			<node id="Sudo">
+				<name>Sudo</name>
+				<interior color="e5f6f7" />
+				<outline color="0000bb" />
+				<font color="000000" name="MS Sans Serif" size="8" />
+				<position>-38 -18 38 18</position>
+			</node>
+			<node id="Acciones_SYSTEM">
+				<name>Acciones_SYSTEM</name>
+				<interior color="e5f6f7" />
+				<outline color="0000bb" />
+				<font color="000000" name="MS Sans Serif" size="8" />
+				<position>-38 -18 38 18</position>
+			</node>
+			<node id="Filtracion">
+				<name>Filtracion</name>
+				<interior color="e5f6f7" />
+				<outline color="0000bb" />
+				<font color="000000" name="MS Sans Serif" size="8" />
+				<position>-38 -18 38 18</position>
+			</node>
+			<node id="Persistencia">
+				<name>Persistencia</name>
+				<interior color="e5f6f7" />
+				<outline color="0000bb" />
+				<font color="000000" name="MS Sans Serif" size="8" />
+				<position>-38 -18 38 18</position>
+			</node>
+			<node id="Denegacion_de_Servicio">
+				<name>Denegacion_de_Servicio</name>
+				<interior color="e5f6f7" />
+				<outline color="0000bb" />
+				<font color="000000" name="MS Sans Serif" size="8" />
+				<position>-38 -18 38 18</position>
+			</node>
+		</genie>
+	</extensions>
+</smile>

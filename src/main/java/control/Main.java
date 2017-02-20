@@ -2,6 +2,9 @@ package control;
 
 import communications.LogReceiver;
 import core.BAG;
+import core.BayesNetworkManager;
+import java.util.HashMap;
+
 
 /**
  * This class starts the system
@@ -11,14 +14,12 @@ import core.BAG;
  */
 public class Main {
 
-	private static LogReceiver logReceiver;
+    private static LogReceiver logReceiver;
 
-	public static void main(String[] args) {
+    public static void main(String[] args) {
 
-		BAG.exportCleanJSON();
-
-		logReceiver = new LogReceiver(Integer.parseInt(args[1]), args[0]);
-		logReceiver.start();
-
-	}
+        BAG.exportCleanJSON();
+        logReceiver = new LogReceiver(Integer.parseInt(args[1]), args[0]);
+        logReceiver.start();  
+    }
 }
