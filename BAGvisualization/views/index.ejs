@@ -181,7 +181,6 @@
 				firstScreen(true, a.done, a.attack);
 			}
 			for (var i = 0; i < a.nodes.length; i++) {
-				console.log(a.nodes[i].prob)
 				nodesArray.push(a.nodes[i]);
 			}
 			for (var i = 0; i < a.edges.length; i++) {
@@ -362,25 +361,41 @@
 				.data(dataset.nodes)
 				.enter()
 				.append("text")
-				.attr({"x":function(d){return d.x-20;},
-					"y":function(d){return d.y+3;},
+				.attr({"x":function(d){
+					if(d.prob){
+						if(d.prob.length == 1){
+							return d.x-7;
+						}else if(d.prob.length == 2){
+							return d.x-15;
+						}else if(d.prob.length == 3){
+							return d.x-15;
+						}else{
+							return d.x-20;
+						}
+					}
+				},
+					"y":function(d){return d.y+6;},
 					"class":"nodelabel",
 					"font-size":"15",
 					"font-weight":"bold"})
-				.text(function(d){return d.prob;});
+				.text(function(d){
+					if(d.prob && d.prob != "0" && d.prob != "100"){
+						return d.prob + "%";
+					}
+				});
 
 				var hmmprob = svg.selectAll(".hmmprob")
 				.data(dataset.nodes)
 				.enter()
 				.append("text")
-				.attr({"x":function(d){return d.x-7},
-					"y":function(d){return d.y+4;},
+				.attr({"x":function(d){return d.x+25},
+					"y":function(d){return d.y+25;},
 					"class":"nodelabel",
 					"font-size":"15",
 					"font-weight":"bold"})
 				.text(function(d){
 					if(d.status.includes("current")){
-						return d.status.substring(7);
+						return "HMM: "+d.status.substring(7)*100+"%";
 					}
 				});
 
@@ -594,11 +609,23 @@
 					nodelabels.attr("x", function(d) { return d.x+25; })
 					.attr("y", function(d) { return d.y-15; });
 
-					nodeprobs.attr("x", function(d) { return d.x-20; })
-					.attr("y", function(d) { return d.y+3; });
+					nodeprobs.attr("x", function(d) { 
+						if(d.prob){
+							if(d.prob.length == 1){
+								return d.x-7;
+							}else if(d.prob.length == 2){
+								return d.x-15;
+							}else if(d.prob.length == 3){
+								return d.x-15;
+							}else{
+								return d.x-20;
+							}
+						}
+					})
+					.attr("y", function(d) { return d.y+6; });
 
-					hmmprob.attr("x", function(d) { return d.x-7; })
-					.attr("y", function(d) { return d.y+4; });
+					hmmprob.attr("x", function(d) { return d.x+25; })
+					.attr("y", function(d) { return d.y+25; });
 
 					edgepaths.attr('d', function(d) { var path='M '+d.source.x+' '+d.source.y+' L '+ d.target.x +' '+d.target.y; return path});
 

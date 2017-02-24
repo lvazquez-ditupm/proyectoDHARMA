@@ -61,7 +61,7 @@ public class MarkovController {
 		risk = Math.round(risk * 100) / 100d;
 		infoAtt.put("risk", risk);
 		markovID = Integer.parseInt(markovLogArray[7].substring(markovLogArray[7].indexOf("=") + 1));
-		for (int i = 8; i <= 11; i++) {
+		/*for (int i = 8; i <= 11; i++) {
 			if (markovLogArray.length > i + 1) {
 				switch (markovLogArray[i].substring(0, markovLogArray[i].indexOf("="))) {
 				case "IPsrc":
@@ -84,7 +84,7 @@ public class MarkovController {
 				continue;
 			}
 			break;
-		}
+		}*/
 
 		data.put("nodes", nodes);
 		data.put("node", node);

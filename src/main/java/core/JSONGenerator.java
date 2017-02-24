@@ -2,11 +2,11 @@ package core;
 
 import java.util.HashMap;
 import com.google.gson.Gson;
+import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.LinkedHashSet;
 import java.util.Set;
 import java.util.stream.Collectors;
-import org.jgrapht.graph.DefaultEdge;
 import org.jgrapht.graph.DefaultEdge;
 import org.jgrapht.graph.ListenableDirectedGraph;
 
@@ -51,7 +51,7 @@ public class JSONGenerator {
         ArrayList<String> pathList = new ArrayList<>();
 
         String pathString = "";
-        
+
         HashMap<String, Double> probs = bnm.getEventProbs();
 
         HashMap<String, Object> jsonMap = new HashMap<>();
@@ -59,12 +59,16 @@ public class JSONGenerator {
         int i = 0;
         int j = 0;
 
+        DecimalFormat df = new DecimalFormat("#.#");
+
         for (String node : nodes) {
 
             nodeMap = new HashMap<>();
             nodeMap.put("id", i);
             nodeMap.put("title", node);
-            nodeMap.put("prob", probs.get(node));
+            if (probs.get(adjustName(node)) != null) {
+                nodeMap.put("prob", df.format(probs.get(adjustName(node))*100));
+            }
 
             if (selectedNode != null && selectedNode.equals(node)) {
                 nodeMap.put("status", "current" + probMarkov);
@@ -255,5 +259,12 @@ public class JSONGenerator {
         jsonMap.put("attack", attacks);
         jsonMap.put("ids", ids);
         return gson.toJson(jsonMap);
+    }
+
+    private String adjustName(String name) {
+        if (name.contains(" ")) {
+            name = name.replace(" ", "_");
+        }
+        return name;
     }
 }

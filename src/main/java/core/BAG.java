@@ -49,7 +49,7 @@ public class BAG {
         futureNodes = new ArrayList<>();
         bag = new ListenableDirectedGraph<>(DefaultEdge.class);
         try {
-            importJSON(props.getJSONPathValue());
+            importJSON(props.getJSONPathValue(), markovID);
         } catch (IOException ex) {
             Logger.getLogger(BAG.class.getName()).log(Level.SEVERE, null, ex);
         }
@@ -81,18 +81,18 @@ public class BAG {
         this.infoAtt = infoAtt;
 
         currentNode = node;
-        bayesNet.eventOcurred(node);
-        bayesNet.updateProbs(id);
-
+        
         Iterator<String> it = nodes.iterator();
         while (it.hasNext()) {
             String item = it.next();
             this.pastNodes.add(item);
+            bayesNet.eventOcurred(item);
             if (item.equals(node)) {
                 break;
             }
         }
-
+        
+        bayesNet.updateProbs(id);
         boolean flag = false;
 
         it = nodes.iterator();
@@ -137,8 +137,9 @@ public class BAG {
      * Genera el grafo a partir de un fichero JSON
      *
      * @param file ruta al fichero
+     * @param hmmId identificador del BAG
      */
-    public void importJSON(String file) throws FileNotFoundException, IOException {
+    public void importJSON(String file, int hmmId) throws FileNotFoundException, IOException {
 
         HashMap<String, Object> parsedGraph;
         Map<String, HashMap> nodes;
@@ -150,13 +151,17 @@ public class BAG {
         cadena = b.readLine();
         b.close();
 
-        parsedGraph = jgp.parseGraph(cadena);
+        parsedGraph = jgp.parseGraph(cadena, hmmId);
 
         nodes = (Map<String, HashMap>) parsedGraph.get("nodes");
         edges = (HashSet<String[]>) parsedGraph.get("edges");
 
         for (String node : nodes.values().toArray(new String[0])) {
             bag.addVertex(node);
+        }
+
+        for (String[] edge : edges) {
+            bag.addEdge(edge[0], edge[1]);
         }
     }
 
@@ -207,7 +212,7 @@ public class BAG {
         if (bags.isEmpty()) {
             try {
                 BAG bag_ = new BAG();
-                bag_.importJSON(props.getJSONPathValue());
+                bag_.importJSON(props.getJSONPathValue(), markovID);
                 bag = bag_.getBag();
             } catch (Exception ex) {
                 Logger.getLogger(BAG.class.getName()).log(Level.SEVERE, null, ex);

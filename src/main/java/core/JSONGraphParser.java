@@ -24,7 +24,7 @@ public class JSONGraphParser {
      * @param json texto a parsear
      * @return nodos y enlaces
      */
-    public HashMap<String, Object> parseGraph(String json) {
+    public HashMap<String, Object> parseGraph(String json, int hmmId) {
         Network net = new Network();
 
         HashMap<String, String> exportedNodes = new HashMap<>();
@@ -80,7 +80,7 @@ public class JSONGraphParser {
         parsedGraph.put("nodes", exportedNodes);
         parsedGraph.put("edges", exportedEdges);
 
-        net.writeFile("bayesNet.xdsl");
+        net.writeFile("bayesNet"+hmmId+".xdsl");
         return parsedGraph;
 
     }
