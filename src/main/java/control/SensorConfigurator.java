@@ -26,7 +26,7 @@ public class SensorConfigurator implements Runnable {
     @Override
     public void run() {
 
-        System.out.println("****  Reiniciando sensores  ****");
+        System.out.println("****  Iniciando sensores  ****");
         stopAll();
         try {
             execPython();
