@@ -28,15 +28,11 @@ public class Dharma {
     /**
      * Crea una nueva red bayesiana a partir del JSON almacenado en la ruta
      * determinada en la configuración del sistema
+     * @param markovID identificador del HMM
      */
-    public void startNewGraph() {
-        Graph graph = new Graph();
+    public void startNewGraph(int markovID) {
+        Graph graph = new Graph(markovID);
         graphList.add(graph);
-        try {
-            graph.importJSON(props.getJSONPathValue());
-        } catch (Exception ex) {
-            Logger.getLogger(Graph.class.getName()).log(Level.SEVERE, null, ex);
-        }
     }
 
     /**
@@ -55,25 +51,26 @@ public class Dharma {
 
         try {
             if (graphList.isEmpty()) {
-                startNewGraph();
+                startNewGraph(markovID);
                 Graph graph = graphList.get(graphList.size() - 1);
-                graph.setMarkovID(markovID);
-                graph.setPosition((String) eventMap.get("node"), markovID, graphList, nodes, probMarkov, done, infoAtt, attack);
+                graph.setPosition((String) eventMap.get("node"), markovID,
+                        graphList, nodes, probMarkov, done, infoAtt, attack);
 
             } else {
                 boolean flag = false;
                 for (Graph graph : graphList) {
                     if (graph.getMarkovID() == markovID) {
-                        graph.setPosition((String) eventMap.get("node"), markovID, graphList, nodes, probMarkov, done, infoAtt, attack);
+                        graph.setPosition((String) eventMap.get("node"), markovID,
+                                graphList, nodes, probMarkov, done, infoAtt, attack);
                         flag = true;
                         break;
                     }
                 }
                 if (!flag) {
-                    startNewGraph();
+                    startNewGraph(markovID);
                     Graph graph = graphList.get(graphList.size() - 1);
-                    graph.setMarkovID(markovID);
-                    graph.setPosition((String) eventMap.get("node"), markovID, graphList, nodes, probMarkov, done, infoAtt, attack);
+                    graph.setPosition((String) eventMap.get("node"), markovID,
+                            graphList, nodes, probMarkov, done, infoAtt, attack);
                 }
             }
 
@@ -104,7 +101,8 @@ public class Dharma {
         if (files != null) {
             for (File f : files) {
                 nombre = f.getName();
-                id = Integer.parseInt(nombre.substring(nombre.indexOf("datos") + 5, nombre.indexOf(".json")));
+                id = Integer.parseInt(nombre.substring(nombre.indexOf("datos") + 5,
+                        nombre.indexOf(".json")));
                 if (!existingGraphs.contains(id)) {
                     f.delete();
                 }

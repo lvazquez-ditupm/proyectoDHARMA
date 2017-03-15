@@ -3,7 +3,7 @@
 <html lang="en">
 <head>
 	<meta charset="utf-8">
-	<title>Graph visualization</title>
+	<title>Attack visualization</title>
 	<script src="http://d3js.org/d3.v3.min.js" charset="utf-8"></script>
 	<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
 	<style type="text/css">
@@ -45,7 +45,7 @@
 		<script type="text/javascript">
 
 	//Editable variables
-	var linkDistance=100,
+	var linkDistance=150,
 	charge = -5000,
 	linkStrength = 2,
 	gravity = 0.1;
@@ -56,8 +56,11 @@
 	noneColor="#bfbfbf";
 	//
 
+	var ids = [];
 	var jsonID = 0,
 	numberGraphs = 0;
+
+	var flag = true;
 
 	var prevJSON = null,
 	currJSON = null;
@@ -75,8 +78,11 @@
 	map_init();
 
 	function siguiente(){
-		if(jsonID < numberGraphs){
-			jsonID+=1;
+		if(ids.length>0 && jsonID==0){
+			jsonID=ids[0];
+		}
+		else if(ids.length>0 && jsonID != ids[ids.length-1]){
+			jsonID=ids[ids.indexOf(jsonID)+1];
 		}else{
 			$("#siguiente").hide();
 		}
@@ -88,8 +94,12 @@
 	}
 
 	function anterior(){
-		if(jsonID > 0){
-			jsonID-=1;
+		if(jsonID==ids[0]){
+			jsonID=0;
+			$("#siguiente").show();
+		}
+		else {
+			jsonID=ids[ids.indexOf(jsonID)-1];
 		}
 	}
 
@@ -100,13 +110,12 @@
 
 	function endAttack(){
 		$.get("/delete", {id:jsonID});
-		numberGraphs--;
 		todos();
 	}
 
 	function firstScreen(show, done, attack){
 		if(show){
-			$("#attackinfo").html("Tipo de ataque: "+attack+"<br/>Porcentaje completado: "+done*100+"%");
+			$("#attackinfo").html("Tipo de ataque: "+attack+"<br/>Porcentaje completado: "+parseFloat(done*100).toPrecision(4)+"%");
 			$("#buttonEnd").show();
 			$("#anterior").show();
 		}else{
@@ -150,12 +159,27 @@
 
 		d3.json("/datos"+jsonID+".json", function(a){
 
+			if(typeof a.ids !== "undefined" && a.ids!==null){
+				ids = a.ids;
+				if(a.ids.length < numberGraphs){
+					numberGraphs = a.ids.length;
+				}
+			}
+
+			if(a.routes.length==0){
+				numberGraphs=0;
+			}
+
+			if(flag){
+				numberGraphs=a.ids.length;
+				flag=false;
+			}
+
 			if(jsonID==0){
 				firstScreen(false);
 			}else{
 				firstScreen(true, a.done, a.attack);
 			}
-
 			for (var i = 0; i < a.nodes.length; i++) {
 				nodesArray.push(a.nodes[i]);
 			}
@@ -196,8 +220,19 @@
 				markovNodes = [];
 			}
 
-			if (a.routes.length > numberGraphs) {
-				numberGraphs = a.routes.length;
+			if (ids.length > numberGraphs) {	
+				str="Posible(s) nuevo(s) ataque(s): ";
+				console.log("asdfasdfasdfasdfasdf")
+				for(i=ids.length-1; i>=numberGraphs;i--){
+					console.log(a.attack[i])
+					str=str+"\n*  "+a.attack[i];
+				}
+				str=str+"\nPulse \"Aceptar\" para ir a la vista de ataque";
+				if (confirm(str)){
+						window.location.replace("http://google.com");
+				};
+				
+				numberGraphs = ids.length;
 			}
 
 			var dataset = {nodes: nodesArray, edges: edgesArray}
@@ -299,12 +334,12 @@
 				.data(dataset.nodes)
 				.enter()
 				.append("circle")
-				.attr({"r":20})
+				.attr({"r":25})
 				.style("fill",function(d,i){
 					if(d.status.match(currRegExp)){return currentColor}
-						else if(d.status.match(markovRegExp)){return markovColor}
-							else if(d.status.match(prevRegExp)){return previousColor}
-								else {return noneColor}})
+					else if(d.status.match(markovRegExp)){return markovColor}
+					else if(d.status.match(prevRegExp)){return previousColor}
+					else {return noneColor}})
 				.style("stroke","black")
 				.call(force.drag)
 				.attr("cx", function(d) { return d.x; })
@@ -315,25 +350,52 @@
 				.data(dataset.nodes)
 				.enter()
 				.append("text")
-				.attr({"x":function(d){return d.x+15;},
+				.attr({"x":function(d){return d.x+25;},
 					"y":function(d){return d.y-15;},
 					"class":"nodelabel",
 					"font-size":"15",
 					"font-weight":"bold"})
 				.text(function(d){return d.title;});
 
+				var nodeprobs = svg.selectAll(".nodeprob")
+				.data(dataset.nodes)
+				.enter()
+				.append("text")
+				.attr({"x":function(d){
+					if(d.prob){
+						if(d.prob.length == 1){
+							return d.x-7;
+						}else if(d.prob.length == 2){
+							return d.x-15;
+						}else if(d.prob.length == 3){
+							return d.x-15;
+						}else{
+							return d.x-20;
+						}
+					}
+				},
+					"y":function(d){return d.y+6;},
+					"class":"nodelabel",
+					"font-size":"15",
+					"font-weight":"bold"})
+				.text(function(d){
+					if(d.prob && d.prob != "0" && d.prob != "100"){
+						return d.prob + "%";
+					}
+				});
+
 				var hmmprob = svg.selectAll(".hmmprob")
 				.data(dataset.nodes)
 				.enter()
 				.append("text")
-				.attr({"x":function(d){return d.x-7},
-					"y":function(d){return d.y+4;},
+				.attr({"x":function(d){return d.x+25},
+					"y":function(d){return d.y+25;},
 					"class":"nodelabel",
 					"font-size":"15",
 					"font-weight":"bold"})
 				.text(function(d){
 					if(d.status.includes("current")){
-						return d.status.substring(7);
+						return "HMM: "+d.status.substring(7)*100+"%";
 					}
 				});
 
@@ -383,7 +445,7 @@
 
 				svg.append('defs').append('marker')
 				.attr({'id':'arrowheadPrevious',
-					'viewBox':'-0 -5 10 10',
+					'viewBox':'-5 -5 10 10',
 					'refX':27,
 					'refY':0,
 					'orient':'auto',
@@ -391,13 +453,13 @@
 					'markerHeight':8,
 					'xoverflow':'visible'})
 				.append('svg:path')
-				.attr('d', 'M 0,-5 L 10 ,0 L 0,5')
+				.attr('d', 'M 0,0 m -5,-5 L 5,0 L -5,5 Z')
 				.style("fill", previousColor)
 				.attr('stroke',previousColor);
 
 				svg.append('defs').append('marker')
 				.attr({'id':'arrowheadMarkov',
-					'viewBox':'-0 -5 10 10',
+					'viewBox':'-5 -5 10 10',
 					'refX':27,
 					'refY':0,
 					'orient':'auto',
@@ -405,13 +467,13 @@
 					'markerHeight':8,
 					'xoverflow':'visible'})
 				.append('svg:path')
-				.attr('d', 'M 0,-5 L 10 ,0 L 0,5')
+				.attr('d', 'M 0,0 m -5,-5 L 5,0 L -5,5 Z')
 				.style('fill', markovColor)
 				.attr('stroke', markovColor);
 
 				svg.append('defs').append('marker')
 				.attr({'id':'arrowheadCurrent',
-					'viewBox':'-0 -5 10 10',
+					'viewBox':'-5 -5 10 10',
 					'refX':27,
 					'refY':0,
 					'orient':'auto',
@@ -419,13 +481,13 @@
 					'markerHeight':8,
 					'xoverflow':'visible'})
 				.append('svg:path')
-				.attr('d', 'M 0,-5 L 10 ,0 L 0,5')
+				.attr('d', 'M 0,0 m -5,-5 L 5,0 L -5,5 Z')
 				.style("fill", currentColor)
 				.attr('stroke',currentColor);
 
 				svg.append('defs').append('marker')
 				.attr({'id':'arrowheadNone',
-					'viewBox':'-0 -5 10 10',
+					'viewBox':'-5 -5 10 10',
 					'refX':27,
 					'refY':0,
 					'orient':'auto',
@@ -433,56 +495,59 @@
 					'markerHeight':8,
 					'xoverflow':'visible'})
 				.append('svg:path')
-				.attr('d', 'M 0,-5 L 10 ,0 L 0,5')
+				.attr('d', 'M 0,0 m -5,-5 L 5,0 L -5,5 Z')
 				.style("fill", noneColor)
 				.attr('stroke',noneColor);
 
 				nodes.on('mouseover', function(d) {          
 					tooltip.select('.route').html(function(){
-
+					
+						var txt = "";
+						var id = 0;
 						var htmlReturn = "";
+						
 						for(var k = 0; k<routesArray.length;k++){
 							if((routesArray[k].previousNodes[0].indexOf(d.title) != -1 ||
 								routesArray[k].currentNode.indexOf(d.title) != -1 ||
-								routesArray[k].markovNodes.indexOf(d.title) != -1 ) &&
-								routesArraySpecific.indexOf(d.title)==-1){
-
+								routesArray[k].markovNodes.indexOf(d.title) != -1 ) ){
+						
 								var _tempArray = [];
-							Array.prototype.push.apply(_tempArray,routesArray[k].previousNodes[0]);
-							Array.prototype.push.apply(_tempArray,routesArray[k].currentNode);
+								Array.prototype.push.apply(_tempArray,routesArray[k].previousNodes[0]);
+								Array.prototype.push.apply(_tempArray,routesArray[k].currentNode);
 
-							for (var i = 0; i < routesArray[k].markovNodes.length; i++){
-								_tempArray.push(routesArray[k].markovNodes[i]+"*");
-							}
-							_tempArray.push(routesArray[k].attack, routesArray[k].done);
-							routesArraySpecific = _tempArray;
-							_tempArray=[];
-						}	
-					}				
+								for (var i = 0; i < routesArray[k].markovNodes.length; i++){
+									_tempArray.push(routesArray[k].markovNodes[i]+"*");
+								}
+								_tempArray.push(routesArray[k].attack, routesArray[k].done);
+								routesArraySpecific = _tempArray;
 
-					var txt = "";
-					var id = 0;
+								done = routesArraySpecific.pop();
+								attack = routesArraySpecific.pop();
 
-					done = routesArraySpecific.pop();
-					attack = routesArraySpecific.pop();
+								for (var i = 0; i < routesArraySpecific.length; i++) {								
+									txt = txt+routesArraySpecific[i]+"-";
+								}	
 
-					for (var i = 0; i < routesArraySpecific.length; i++) {								
-						txt = txt+routesArraySpecific[i]+"-";
-					}	
+								for (var k = 0; k < a.routes.length; k++){
+									if(a.routes[k]==txt){
+										id = ids[k];
+										break;
+									}
+								}
 
-					for (var k = 0; k < a.routes.length; k++){
-						if(a.routes[k]==txt){
-							id = k+1;
-							break;
-						}
-					}
+								txt = txt.slice(0,-1)
 
-					txt = txt.slice(0,-1)
+								if(htmlReturn!=""){
+									htmlReturn+="<div>------------</div>"
+								}
 
-					htmlReturn = htmlReturn+"<div onclick='linkTo("+id+")'><p>"+txt+"</p><p>"+attack+"</p><p>"+done*100+"% completado</p></div>";
-					txt="";
-					id=0;
+								htmlReturn = htmlReturn+"<div onclick='linkTo("+id+")'><p>"+txt+"</p><p>"+attack+"</p><p>"+parseFloat(done*100).toPrecision(4)+"% completado</p></div>";
+								txt="";
+								id=0;
 
+								_tempArray=[];
+							}	
+						}				
 
 					if(routesArraySpecific.length==0){
 						txtFlag=false;
@@ -541,11 +606,26 @@
 					.attr("cx", function(d) { return d.x; })
 					.attr("cy", function(d) { return d.y; });
 
-					nodelabels.attr("x", function(d) { return d.x+15; })
+					nodelabels.attr("x", function(d) { return d.x+25; })
 					.attr("y", function(d) { return d.y-15; });
 
-					hmmprob.attr("x", function(d) { return d.x-7; })
-					.attr("y", function(d) { return d.y+4; });
+					nodeprobs.attr("x", function(d) { 
+						if(d.prob){
+							if(d.prob.length == 1){
+								return d.x-7;
+							}else if(d.prob.length == 2){
+								return d.x-15;
+							}else if(d.prob.length == 3){
+								return d.x-15;
+							}else{
+								return d.x-20;
+							}
+						}
+					})
+					.attr("y", function(d) { return d.y+6; });
+
+					hmmprob.attr("x", function(d) { return d.x+25; })
+					.attr("y", function(d) { return d.y+25; });
 
 					edgepaths.attr('d', function(d) { var path='M '+d.source.x+' '+d.source.y+' L '+ d.target.x +' '+d.target.y; return path});
 

@@ -1,7 +1,9 @@
 package control;
 
+import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.io.StringWriter;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -46,16 +48,25 @@ public class SensorConfigurator implements Runnable {
      */
     public static void execPython() throws ScriptException, IOException {
 
-        StringWriter writer = new StringWriter();
+        String s = null;
 
-        ScriptEngineManager manager = new ScriptEngineManager();
-        ScriptContext context = new SimpleScriptContext();
+        try {
 
-        context.setWriter(writer);
-        ScriptEngine engine = manager.getEngineByName("python");
-        FileReader file = new FileReader(props.getDharmaPathValue() + "/loadScript.py");
-        engine.eval(file, context);
-        //System.out.println(writer.toString());  //Debug
+            Process p = Runtime.getRuntime().exec("sudo python " +props.getDharmaPathValue() + "/loadScript.py " + props.getAnomalyPathsValue());
+            BufferedReader stdInput = new BufferedReader(new InputStreamReader(p.getInputStream()));
+            BufferedReader stdError = new BufferedReader(new InputStreamReader(p.getErrorStream()));
+
+            while ((s = stdInput.readLine()) != null) {
+                System.out.println(s);
+            }
+
+            while ((s = stdError.readLine()) != null) {
+                System.out.println(s);
+            }
+
+        } catch (IOException e) {
+            e.printStackTrace();
+            System.exit(-1);
+        }
     }
-
 }

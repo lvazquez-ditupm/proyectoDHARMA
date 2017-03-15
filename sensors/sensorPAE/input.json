@@ -1,0 +1,16 @@
+[{
+	"SALA": 14,
+	"ESTADO": 0,
+	"ACTIVOS": {
+		"1958": 1,
+		"Activo2": 1,
+		"Activo5": 2
+	}
+}, {
+	"SALA": 15,
+	"ESTADO": 0,
+	"ACTIVOS": {
+		"Activo3": 2,
+		"Activo4": 3
+	}
+}]

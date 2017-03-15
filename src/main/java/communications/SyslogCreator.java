@@ -19,6 +19,7 @@ import utils.SuricataEventParser;
  * @author UPM (member of DHARMA Development Team) (http://dharma.inf.um.es)
  * @version 1.0
  */
+@Deprecated
 public class SyslogCreator {
 
     private final DharmaProperties props = new DharmaProperties();

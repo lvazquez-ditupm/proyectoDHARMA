@@ -2,12 +2,12 @@ package core;
 
 import java.util.HashMap;
 import com.google.gson.Gson;
+import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.LinkedHashSet;
 import java.util.Set;
 import java.util.stream.Collectors;
 import org.jgrapht.graph.DefaultEdge;
-import org.jgrapht.graph.DefaultWeightedEdge;
 import org.jgrapht.graph.ListenableDirectedGraph;
 
 /**
@@ -26,18 +26,18 @@ public class JSONGenerator {
      * futuro (un ataque)
      *
      * @param graph grafo
+     * @param bnm grafo bayesiano para inferencias
      * @param selectedNode nodo actual
      * @param phaseHistory historial de nodos
-     * @param nextNodes nodos siguientes previstos por HMM
-     * @param markovID ID de la cadena que lleva el ataque
+     * @param markovNodes nodos siguientes previstos por HMM
+     * @param position ID del ataque
      * @param probMarkov probabilidad de estar en el punto actual del HMM
      * @param done porcentaje realizado del ataque
-     * @param infoAtt otros datos sobre el ataque
      * @param attack tipo de ataque
      * @return string JSON
      */
-    public String individualGenerator(ListenableDirectedGraph<String, DefaultEdge> graph, String selectedNode,
-            ArrayList<String> phaseHistory, ArrayList<String> nextNodes, int markovID, double probMarkov, double done, HashMap<String, Object> infoAtt,
+    public String individualGenerator(ListenableDirectedGraph<String, DefaultEdge> graph, BayesNetworkManager bnm, String selectedNode,
+            ArrayList<String> phaseHistory, ArrayList<String> markovNodes, int position, double probMarkov, double done, HashMap<String, Object> infoAtt,
             String attack) {
 
         Gson gson = new Gson();
@@ -52,16 +52,23 @@ public class JSONGenerator {
 
         String pathString = "";
 
+        HashMap<String, Double> probs = bnm.getEventProbs();
+
         HashMap<String, Object> jsonMap = new HashMap<>();
 
         int i = 0;
         int j = 0;
+
+        DecimalFormat df = new DecimalFormat("#.#");
 
         for (String node : nodes) {
 
             nodeMap = new HashMap<>();
             nodeMap.put("id", i);
             nodeMap.put("title", node);
+            if (probs.get(adjustName(node)) != null) {
+                nodeMap.put("prob", df.format(probs.get(adjustName(node))*100));
+            }
 
             if (selectedNode != null && selectedNode.equals(node)) {
                 nodeMap.put("status", "current" + probMarkov);
@@ -75,14 +82,14 @@ public class JSONGenerator {
                 }
             }
 
-            for (int k = 0; k < nextNodes.size(); k++) {
-                if (nodeMap.get("status") == null && nextNodes.get(k).equals(node)) {
+            for (int k = 0; k < markovNodes.size(); k++) {
+                if (nodeMap.get("status") == null && markovNodes.get(k).equals(node)) {
                     nodeMap.put("status", "markov");
                     break;
                 }
             }
 
-            if (nodeMap.get("status") == null && !nextNodes.contains(node)) {
+            if (nodeMap.get("status") == null && !markovNodes.contains(node)) {
                 nodeMap.put("status", "none");
             }
 
@@ -94,7 +101,6 @@ public class JSONGenerator {
                     edgeMap = new HashMap<>();
                     edgeMap.put("source", i);
                     edgeMap.put("target", j);
-                    // edgeMap.put("weight", graph.getEdgeWeight(e)); DESCOMENTAR PARA MOSTRAR LOS PESOS DE LOS ENLACES
                     edgesList.add(edgeMap);
                 }
                 j++;
@@ -108,8 +114,8 @@ public class JSONGenerator {
             pathString += phaseHistory.get(i) + "-";
         }
 
-        for (j = 0; j < nextNodes.size(); j++) {
-            pathString += nextNodes.get(j) + "*-";
+        for (j = 0; j < markovNodes.size(); j++) {
+            pathString += markovNodes.get(j) + "*-";
         }
 
         pathList.add(pathString);
@@ -117,7 +123,7 @@ public class JSONGenerator {
         jsonMap.put("nodes", nodesList);
         jsonMap.put("edges", edgesList);
         jsonMap.put("routes", pathList);
-        jsonMap.put("attackID", markovID);
+        jsonMap.put("attackID", position);
         jsonMap.put("done", done);
         for (String infoAttKey : infoAtt.keySet()) {
             jsonMap.put(infoAttKey, infoAtt.get(infoAttKey));
@@ -129,7 +135,7 @@ public class JSONGenerator {
 
     /**
      * Genera el JSON a partir del grafo, el historial de nodos, el actual y el
-     * futuro (con todos los ataques simultánteamente)
+     * futuro (todos los ataques simultánteamente)
      *
      * @param graph grafo
      * @param selectedNodes nodos actuales
@@ -138,7 +144,6 @@ public class JSONGenerator {
      * @param phaseHistories historiales de nodos
      * @param doneList lista de porcentajes de éxito en ataques
      * @param attacks lista de tipos de ataques
-     * @param ids IDs de las cadenas HMM
      * @return string JSON
      */
     public String totalGenerator(ListenableDirectedGraph<String, DefaultEdge> graph,
@@ -217,7 +222,7 @@ public class JSONGenerator {
             for (String nextCandidate : nodes) {
 
                 if (graph.containsEdge(node, nextCandidate)) {
-                    DefaultWeightedEdge e = (DefaultWeightedEdge) graph.getEdge(node, nextCandidate);
+                    DefaultEdge e = (DefaultEdge) graph.getEdge(node, nextCandidate);
                     edgeMap = new HashMap<>();
                     edgeMap.put("source", i);
                     edgeMap.put("target", j);
@@ -243,7 +248,8 @@ public class JSONGenerator {
             historyList.add(pathString);
         }
 
-        ArrayList<HashMap> _nodesList = new ArrayList<>(nodesList.stream().distinct().collect(Collectors.toList())); // Eliminar duplicados
+        ArrayList<HashMap> _nodesList = new ArrayList<>(nodesList.stream().distinct().collect(Collectors.toList())); // Eliminar
+        // duplicados
 
         jsonMap.put("nodes", _nodesList);
         jsonMap.put("edges", edgesList);
@@ -253,5 +259,12 @@ public class JSONGenerator {
         jsonMap.put("attack", attacks);
         jsonMap.put("ids", ids);
         return gson.toJson(jsonMap);
+    }
+
+    private String adjustName(String name) {
+        if (name.contains(" ")) {
+            name = name.replace(" ", "_");
+        }
+        return name;
     }
 }

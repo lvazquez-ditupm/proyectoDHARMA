@@ -28,93 +28,86 @@ import utils.DharmaProperties;
 public class Graph {
 
     private ListenableDirectedGraph<String, DefaultEdge> graph;
-    private String selectedNode;
+    private String currentNode;
     private double probMarkov;
     private double done;
     private HashMap<String, Object> infoAtt;
     private String attack;
-    private ArrayList<String> phaseHistory;
-    private ArrayList<String> markovNodes;
+    private ArrayList<String> pastNodes;
+    private ArrayList<String> futureNodes;
     private int markovID;
     private final DharmaProperties props = new DharmaProperties();
+    private BayesNetworkManager bayesNet;
 
     /**
      * Crea un grafo acíclico bayesiano
      *
+     * @param markovID identificador del HMM
      */
+    public Graph(int markovID) {
+        this.markovID = markovID;
+        pastNodes = new ArrayList<>();
+        futureNodes = new ArrayList<>();
+        graph = new ListenableDirectedGraph<>(DefaultEdge.class);
+        try {
+            importJSON(props.getJSONPathValue(), markovID);
+        } catch (IOException ex) {
+            Logger.getLogger(Graph.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        bayesNet = new BayesNetworkManager(markovID);
+    }
+
     public Graph() {
-        phaseHistory = new ArrayList<>();
-        markovNodes = new ArrayList<>();
-        graph = new ListenableDirectedWeightedGraph<>(DefaultWeightedEdge.class);
+        pastNodes = new ArrayList<>();
+        futureNodes = new ArrayList<>();
+        graph = new ListenableDirectedGraph<>(DefaultEdge.class);
     }
-
-    /**
-     * Añade un nodo al grafo
-     *
-     * @param node nuevo vértice
-     * @param previous hashmap de vértices anteriores con sus pesos
-     * @param next hashmap de vértices posteriores con sus pesos
-     */
-    public void addNode(String node, HashMap<String, Double> previous, HashMap<String, Double> next) {
-        graph.addVertex(node);
-        Iterator it = previous.entrySet().iterator();
-        while (it.hasNext()) {
-            Map.Entry e = (Map.Entry) it.next();
-            graph.setEdgeWeight(graph.addEdge(e.getKey().toString(), node), (double) e.getValue());
-        }
-        if (next != null) {
-            it = next.entrySet().iterator();
-            while (it.hasNext()) {
-                Map.Entry e = (Map.Entry) it.next();
-                graph.setEdgeWeight(graph.addEdge(node, e.getKey().toString()), (double) e.getValue());
-            }
-        }
-    }
-
 
     /**
      * Establece la posición en el grafo
      *
      * @param node nodo a establecer la posición
-     * @param markovID ID de la cadena que lleva este grafo
+     * @param id identificador del grafo
      * @param graphs lista con todos los grafos
-     * @param nodes nodos relacionados con el ataque
-     * @param probMarkov probabilidad de estar en el estado que dice la cadena
+     * @param nodes nodos que pertenecen al ataque mostrado en el grafo
+     * @param probMarkov probabilidad de pertenecer al estado actual del ataque
      * @param done porcentaje del ataque completado
-     * @param infoAtt informacion relacionada con el ataque
+     * @param infoAtt infotmación sobre el ataque
      * @param attack nombre del ataque
      */
-    public void setPosition(String node, int markovID, ArrayList<Graph> graphs, ArrayList<String> nodes, double probMarkov,
+    public void setPosition(String node, int id, ArrayList<Graph> graphs, ArrayList<String> nodes, double probMarkov,
             double done, HashMap<String, Object> infoAtt, String attack) throws Exception {
         if (!graph.containsVertex(node)) {
             throw new Exception("Nodo no existente en la red bayesiana");
         }
 
-        this.phaseHistory = new ArrayList<>();
-        this.markovNodes.clear();
+        this.pastNodes = new ArrayList<>();
+        this.futureNodes.clear();
         this.probMarkov = probMarkov;
         this.done = done;
         this.attack = attack;
         this.infoAtt = infoAtt;
 
-        selectedNode = node;
-
+        currentNode = node;
+        
         Iterator<String> it = nodes.iterator();
         while (it.hasNext()) {
             String item = it.next();
-            this.phaseHistory.add(item);
+            this.pastNodes.add(item);
+            bayesNet.eventOcurred(item);
             if (item.equals(node)) {
                 break;
             }
         }
-
+        
+        bayesNet.updateProbs(id);
         boolean flag = false;
 
         it = nodes.iterator();
         while (it.hasNext()) {
             String item = it.next();
             if (flag) {
-                this.markovNodes.add(item);
+                this.futureNodes.add(item);
             } else if (item.equals(node)) {
                 flag = true;
             }
@@ -122,49 +115,39 @@ public class Graph {
 
         try {
 
-            exportIndividualJSON(markovID);
+            exportIndividualJSON(id);
             exportCompleteJSON(graphs);
 
-        } catch (FileNotFoundException | UnsupportedEncodingException ex) {
+        } catch (Exception ex) {
             Logger.getLogger(Graph.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
 
-
-
     /**
-     * Devuelve los nodos involucrados en el ataque
+     * Devuelve el estado del nodo
      *
-     * @return lista de nodos
+     * @param node nodo
+     * @return estado
      */
-    public ArrayList<String> getMarkovNodes() {
-        return markovNodes;
-    }
-
-    /**
-     * Devuelve el nodo actual
-     *
-     * @return nombre del nodo
-     */
-    public String getPosition() {
-        return selectedNode;
-    }
-
-    /**
-     * Devuelve la lista de nodos previos
-     *
-     * @return lista de nodos previos
-     */
-    public ArrayList<String> getHistory() {
-        return phaseHistory;
+    public String getNodeStatus(String node) {
+        if (node.equals(this.getCurrentNode())) {
+            return "current";
+        } else if (getFutureNodes().contains(node)) {
+            return "next";
+        } else if (this.getPhaseHistory().contains(node)) {
+            return "previous";
+        } else {
+            return "none";
+        }
     }
 
     /**
      * Genera el grafo a partir de un fichero JSON
      *
      * @param file ruta al fichero
+     * @param hmmId identificador del grafo
      */
-    public void importJSON(String file) throws FileNotFoundException, IOException {
+    public void importJSON(String file, int hmmId) throws FileNotFoundException, IOException {
 
         HashMap<String, Object> parsedGraph;
         Map<String, HashMap> nodes;
@@ -176,7 +159,7 @@ public class Graph {
         cadena = b.readLine();
         b.close();
 
-        parsedGraph = jgp.parseGraph(cadena);
+        parsedGraph = jgp.parseGraph(cadena, hmmId);
 
         nodes = (Map<String, HashMap>) parsedGraph.get("nodes");
         edges = (HashSet<String[]>) parsedGraph.get("edges");
@@ -195,12 +178,13 @@ public class Graph {
      *
      * @param position ID del grafo
      */
-    public void exportIndividualJSON(int position) throws FileNotFoundException, UnsupportedEncodingException {
+    public void exportIndividualJSON(int position)
+            throws FileNotFoundException, UnsupportedEncodingException {
         JSONGenerator jsonGen = new JSONGenerator();
-        String json = jsonGen.individualGenerator(graph, selectedNode, phaseHistory, markovNodes, position, probMarkov,
-                done, infoAtt, attack);
-        PrintWriter writer = new PrintWriter(props.getGraphVisualizatorPathValue() + "/public/datos" + position + ".json",
-                "UTF-8");
+        String json = jsonGen.individualGenerator(graph, bayesNet, currentNode, pastNodes,
+                futureNodes, position, probMarkov, done, infoAtt, attack);
+        PrintWriter writer = new PrintWriter(props.getGraphVisualizatorPathValue()
+                + "/public/datos" + position + ".json", "UTF-8");
         writer.println(json);
         writer.close();
     }
@@ -210,7 +194,8 @@ public class Graph {
      *
      * @param graphs distintos grafos
      */
-    public void exportCompleteJSON(ArrayList<Graph> graphs) throws FileNotFoundException, UnsupportedEncodingException {
+    public void exportCompleteJSON(ArrayList<Graph> graphs)
+            throws FileNotFoundException, UnsupportedEncodingException {
         JSONGenerator jsonGen = new JSONGenerator();
         ArrayList<String> selectedNodes = new ArrayList<>();
         ArrayList<ArrayList<String>> phaseHistories = new ArrayList<>();
@@ -222,9 +207,9 @@ public class Graph {
 
         for (Graph graphItem : graphs) {
 
-            selectedNodes.add(graphItem.getPosition());
-            phaseHistories.add(graphItem.getHistory());
-            markovNodes_.add(graphItem.getMarkovNodes());
+            selectedNodes.add(graphItem.getCurrentNode());
+            phaseHistories.add(graphItem.getPastNodes());
+            markovNodes_.add(graphItem.getFutureNodes());
             probsMarkov.add(graphItem.getProbMarkov());
             doneList.add(graphItem.getDone());
             attacks.add(graphItem.getAttack());
@@ -235,23 +220,21 @@ public class Graph {
         if (graphs.isEmpty()) {
             try {
                 Graph graph_ = new Graph();
-                graph_.importJSON(props.getJSONPathValue());
+                graph_.importJSON(props.getJSONPathValue(), markovID);
                 graph = graph_.getGraph();
             } catch (Exception ex) {
                 Logger.getLogger(Graph.class.getName()).log(Level.SEVERE, null, ex);
             }
         }
 
-        String json = jsonGen.totalGenerator(graph, selectedNodes, markovNodes_, phaseHistories, probsMarkov, doneList,
-                attacks, ids);
-        PrintWriter writer = new PrintWriter(props.getGraphVisualizatorPathValue() + "/public/datos0.json", "UTF-8");
+        String json = jsonGen.totalGenerator(graph, selectedNodes, markovNodes_, phaseHistories,
+                probsMarkov, doneList, attacks, ids);
+        PrintWriter writer = new PrintWriter(props.getGraphVisualizatorPathValue()
+                + "/public/datos0.json", "UTF-8");
         writer.println(json);
         writer.close();
     }
 
-    /**
-     * Genera un JSON común conun grafo en blanco y borra los demás JSON
-     */
     public static void exportCleanJSON() {
         try {
             Graph graph = new Graph();
@@ -263,26 +246,14 @@ public class Graph {
     }
 
     /*
-	 * Otros getters y setters
+    Otros getters y setters
      */
-    public void setGraph(ListenableDirectedWeightedGraph<String, DefaultEdge> graph) {
-        this.graph = graph;
-    }
-
-    public void setSelectedNode(String selectedNode) {
-        this.selectedNode = selectedNode;
-    }
-
-    public void setMarkovID(int markovID) {
-        this.markovID = markovID;
-    }
-
     public ListenableDirectedGraph<String, DefaultEdge> getGraph() {
         return graph;
     }
 
     public ArrayList<String> getPhaseHistory() {
-        return phaseHistory;
+        return pastNodes;
     }
 
     public int getMarkovID() {
@@ -297,11 +268,19 @@ public class Graph {
         return done;
     }
 
-    public HashMap<String, Object> getinfoAtt() {
-        return infoAtt;
-    }
-
     public String getAttack() {
         return attack;
+    }
+
+    public ArrayList<String> getPastNodes() {
+        return pastNodes;
+    }
+
+    public String getCurrentNode() {
+        return currentNode;
+    }
+
+    public ArrayList<String> getFutureNodes() {
+        return futureNodes;
     }
 }

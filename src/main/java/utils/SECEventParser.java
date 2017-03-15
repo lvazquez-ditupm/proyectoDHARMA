@@ -13,6 +13,7 @@ import java.util.logging.Logger;
  * @author UPM (member of DHARMA Development Team) (http://dharma.inf.um.es)
  * @version 1.0
  */
+@Deprecated
 public class SECEventParser {
 
     /**
