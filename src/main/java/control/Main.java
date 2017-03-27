@@ -30,6 +30,9 @@ public class Main {
         Graph.exportCleanJSON();
         markovController = new MarkovController();
         sensorCollector = new SensorCollector(props.getAnomalyPathsValue());
+        
+        new Thread(sensorCollector).start();
+        
         //eventReceiver = new SECEventReceiver();
         //new Thread(eventReceiver).start();
 

@@ -30,11 +30,11 @@ def social():
 	ps = subprocess.Popen('ps -ef | grep parsexcel.py', stdout=subprocess.PIPE, shell=True)
 	(out, err) = ps.communicate()
 	with open(pathsFile, "a") as myfile:
-		myfile.write("SOCIAL///"+location+"/sensors/social\r")
+		myfile.write("SOCIAL///"+location+"/sensors/social/output.txt\r")
 	if out.find("python parsexcel.py") == -1:
 		print 'Arrancando sensor social'
 		os.chdir(location+"/sensors/social")
-		subprocess.Popen('python parsexcel.py', shell=True)
+		subprocess.Popen('python parsexcel.py ./output.txt', shell=True)
 
 def nodeJS():
 	ps = subprocess.Popen('ps -ef | grep node', stdout=subprocess.PIPE, shell=True)
@@ -58,28 +58,28 @@ def sensorUSB():
 	ps = subprocess.Popen('ps -ef | grep SensorUSB.jar', stdout=subprocess.PIPE, shell=True)
 	(out, err) = ps.communicate()
 	with open(pathsFile, "a") as myfile:
-		myfile.write("USB///"+location+'/sensors/sensorUSB\r')
+		myfile.write("USB///"+location+'/sensors/sensorUSB/output.txt\r')
 	if out.find("java -jar SensorUSB.jar") == -1:
 		os.chdir(location+'/sensors/sensorUSB')
 		print 'Arrancando sensor USB'
-		subprocess.Popen('java -jar SensorUSB.jar ./input.txt ./output.json root asdf 1000 138.4.7.191', shell=True)
+		subprocess.Popen('java -jar SensorUSB.jar ./input.txt ./output.txt root asdf 1000 138.4.7.191', shell=True)
 
 def sensorPAE():
 	ps = subprocess.Popen('ps -ef | grep SensorPAE.jar', stdout=subprocess.PIPE, shell=True)
 	(out, err) = ps.communicate()
 	with open(pathsFile, "a") as myfile:
-		myfile.write("PAE///"+location+'/sensors/sensorPAE\r')
+		myfile.write("PAE///"+location+'/sensors/sensorPAE/output.txt\r')
 	if out.find("java -jar SensorPAE.jar") == -1:
 		os.chdir(location+'/sensors/sensorPAE')
 		print 'Arrancando sensor Presencia-Activos-Estado'
-		subprocess.Popen('java -jar SensorPAE.jar exec 900 root asdf ./ ./', shell=True)
+		subprocess.Popen('java -jar SensorPAE.jar exec 10 root asdf ./input.txt ./output.txt', shell=True)
 
 
 #SEC()
 tsusen()
 social()
 #nodeJS()
-ubertooth()
+#ubertooth()
 sensorUSB()
 sensorPAE()
 

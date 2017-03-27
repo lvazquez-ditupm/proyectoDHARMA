@@ -52,7 +52,7 @@ public class SensorConfigurator implements Runnable {
 
         try {
 
-            Process p = Runtime.getRuntime().exec("sudo python " +props.getDharmaPathValue() + "/loadScript.py " + props.getAnomalyPathsValue());
+            Process p = Runtime.getRuntime().exec("sudo python " + props.getDharmaPathValue() + "/loadScript.py " + props.getAnomalyPathsValue());
             BufferedReader stdInput = new BufferedReader(new InputStreamReader(p.getInputStream()));
             BufferedReader stdError = new BufferedReader(new InputStreamReader(p.getErrorStream()));
 

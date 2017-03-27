@@ -2,15 +2,15 @@
 	"SALA": 14,
 	"ESTADO": 0,
 	"ACTIVOS": {
-		"1958": 1,
-		"Activo2": 1,
-		"Activo5": 2
+		"1958": 2,
+		"Activo2": 3,
+		"Activo5": 1
 	}
 }, {
 	"SALA": 15,
-	"ESTADO": 0,
+	"ESTADO": 1,
 	"ACTIVOS": {
 		"Activo3": 2,
-		"Activo4": 3
+		"Activo4": 51
 	}
 }]
