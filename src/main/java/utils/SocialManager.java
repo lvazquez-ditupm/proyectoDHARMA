@@ -33,7 +33,7 @@ public class SocialManager {
                 }
                 risk = content;
                 
-                value.put("Time", System.currentTimeMillis());
+                value.put("Date", System.currentTimeMillis());
                 
                 output.put("Social", value);
                 SensorCollector.receiveNewData(output);

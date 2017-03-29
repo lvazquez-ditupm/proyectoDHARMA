@@ -1,9 +1,12 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package utils;
+
+import communications.SensorCollector;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.util.HashMap;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  *
@@ -11,7 +14,29 @@ package utils;
  */
 public class BluetoothManager {
 
-    public BluetoothManager(String path_) {
+    private HashMap<String, HashMap<String, Object>> output = new HashMap<>();
+    private HashMap<String, Object> anomalies = new HashMap<>();
+
+    public BluetoothManager(String path) {
+        try {
+            String input = new String(Files.readAllBytes(Paths.get(path)));
+            if (input.equals("\n")) {
+                return;
+            }
+            input = input.replace("\n", "");
+            String[] addresses = input.split(", ");
+
+            anomalies.put("Anomalies", addresses);
+            anomalies.put("Date", System.currentTimeMillis());
+
+            output.put("Bluetooth", anomalies);
+
+            SensorCollector.receiveNewData(output);
+
+        } catch (IOException ex) {
+            Logger.getLogger(BluetoothManager.class.getName()).log(Level.SEVERE, null, ex);
+        }
+
     }
-    
+
 }

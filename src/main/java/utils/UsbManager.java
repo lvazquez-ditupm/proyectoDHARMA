@@ -26,7 +26,7 @@ public class UsbManager {
             jsonList.remove(0);
 
             value.put("Anomalies", jsonList);
-            value.put("Time", System.currentTimeMillis());
+            value.put("Date", System.currentTimeMillis());
 
             output.put("USB", value);
 

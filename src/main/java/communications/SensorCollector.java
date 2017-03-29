@@ -7,7 +7,6 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.nio.file.FileSystems;
 import java.nio.file.Files;
-import java.nio.file.Path;
 import java.nio.file.Paths;
 import static java.nio.file.StandardWatchEventKinds.ENTRY_CREATE;
 import static java.nio.file.StandardWatchEventKinds.ENTRY_MODIFY;
@@ -24,7 +23,6 @@ import utils.BluetoothManager;
 import utils.DharmaProperties;
 import utils.PaeManager;
 import utils.SocialManager;
-import utils.TsusenManager;
 import utils.UsbManager;
 
 /**
@@ -89,10 +87,6 @@ public class SensorCollector implements Runnable {
 
                 for (WatchEvent<?> event : key.pollEvents()) {
                     WatchEvent.Kind<?> kind = event.kind();
-                    WatchEvent<Path> ev = (WatchEvent<Path>) event;
-                    Path fileName = ev.context();
-
-                    System.out.println(kind.name() + ": " + fileName);
 
                     if (kind == ENTRY_MODIFY || kind == ENTRY_CREATE) {
                         SensorCollector.processData();
@@ -118,9 +112,6 @@ public class SensorCollector implements Runnable {
             String item = path.split("///")[0];
             String path_ = path.split("///")[1];
             switch (item) {
-                case "TSUSEN":
-                    new TsusenManager(path_);
-                    break;
                 case "SOCIAL":
                     new SocialManager(path_);
                     break;
@@ -142,8 +133,8 @@ public class SensorCollector implements Runnable {
     public static void receiveNewData(HashMap<String, HashMap<String, Object>> input) {
 
         anomalies.putAll(input);
-
         String jsonString = gson.toJson(anomalies);
+        System.out.println(jsonString);
 
     }
 

@@ -11,6 +11,6 @@
 	"ESTADO": 1,
 	"ACTIVOS": {
 		"Activo3": 2,
-		"Activo4": 51
+		"Activo4": 1
 	}
 }]

@@ -1,24 +1,28 @@
 # -*- coding: utf-8 -*- 
 # importamos los módulos para envio de correos y ejecución de comandos en la shell
 from subprocess import Popen, PIPE
-import subprocess, time, json, io
+import subprocess, time, json, io, sys
+
+open(sys.argv[2], "w").close()
 
 while True:
     t_init = time.time()
-    t_end = time.time()+(60*1)
+    t_end = time.time()+int(sys.argv[1])
     data=""
 
     while time.time() < t_end:
 
         hcitoolResult = []
-        ubertoothResult = {}
+        #ubertoothResult = {}
         
-        p = Popen(['ubertooth-rx', '-t', '5'], stdout=PIPE)
         q = subprocess.Popen('hcitool scan', stdout=subprocess.PIPE, shell=True)
         
         hcitool = q.communicate()[0]
-        ubertooth = p.communicate()[0]
-            
+
+        '''
+        p = Popen(['ubertooth-rx', '-t', '5'], stdout=PIPE)
+        
+        ubertooth = p.communicate()[0]    
         ubertooth = ubertooth.splitlines()
 
         dictItem = {}
@@ -35,8 +39,10 @@ while True:
                     ubertoothResult[dictItem['LAP']] = ubertoothResult[dictItem['LAP']]+1
                 else:
                     ubertoothResult[dictItem['LAP']] = 1
-                    
+                
         dictItem = {}
+
+        '''      
         
         hcitool = hcitool.splitlines()[1:]
         
@@ -47,11 +53,10 @@ while True:
             if not macaddr in hcitoolResult:
                 hcitoolResult.append(macaddr) 
         
-        data = data[:-1]+json.dumps({int(time.time()): {"LAPs" : ubertoothResult, "visibleAddr" : hcitoolResult}})[1:-1]+",}"
-        #print data
-    data = "{"+data[:-2]+"}"
-    #print "FINAL"
-    #print data
+        #data = data[:-1]+json.dumps({int(time.time()): {"LAPs" : ubertoothResult, "visibleAddr" : hcitoolResult}})[1:-1]+",}"
+        data = json.dumps(hcitoolResult)[2:-2]
+    
+    if data != "":
+        with io.FileIO(sys.argv[2], "a") as file:
+            file.write(data+",")
 
-    with io.FileIO(str(int(t_init))+".json", "w") as file:
-        file.write(data)

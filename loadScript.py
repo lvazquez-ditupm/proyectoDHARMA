@@ -1,10 +1,10 @@
 import os, sys, subprocess, shutil
 
-location = os.path.abspath('./');
+location = os.path.abspath('./')
 
 pathsFile = sys.argv[1]
 
-open(pathsFile, 'w').close()
+open(pathsFile, "w").close()
 
 def SEC():
 	ps = subprocess.Popen('ps -ef | grep sec', stdout=subprocess.PIPE, shell=True)
@@ -44,16 +44,28 @@ def nodeJS():
 		print 'Arrancando NodeJS'
 		subprocess.Popen('npm start', shell=True)
 
-def ubertooth():
-	ps = subprocess.Popen('ps -ef | grep ubertooth.py', stdout=subprocess.PIPE, shell=True)
+def bt1():
+	ps = subprocess.Popen('ps -ef | grep bluetooth.py', stdout=subprocess.PIPE, shell=True)
 	(out, err) = ps.communicate()
-	with open(pathsFile, "a") as myfile:
-		myfile.write("BLUETOOTH///"+location+"/sensors/bluetooth\r")
-	if out.find("python ubertooth.py") == -1:
+	if out.find("python bluetooth.py") == -1:
 		print 'Arrancando sensor Bluetooth'
 		os.chdir(location+"/sensors/bluetooth")
-		subprocess.Popen('python ubertooth.py', shell=True)
+		subprocess.Popen('python bluetooth.py 60 ./input.txt', shell=True)
 
+def bt2():
+	ps = subprocess.Popen('ps -ef | grep SensorBluetooth.jar', stdout=subprocess.PIPE, shell=True)
+	(out, err) = ps.communicate()
+	if out.find("java -jar SensorBluetooth.jar") == -1:
+		print 'Arrancando procesador Bluetooth'
+		os.chdir(location+"/sensors/bluetooth")
+		subprocess.Popen('java -jar SensorBluetooth.jar exec 60 root asdf ./input.txt ./output.txt', shell=True)
+
+def bluetooth():
+	with open(pathsFile, "a") as myfile:
+		myfile.write("BLUETOOTH///"+location+"/sensors/bluetooth/output.txt\r")
+	#bt1()
+	bt2()
+	
 def sensorUSB():
 	ps = subprocess.Popen('ps -ef | grep SensorUSB.jar', stdout=subprocess.PIPE, shell=True)
 	(out, err) = ps.communicate()
@@ -62,7 +74,7 @@ def sensorUSB():
 	if out.find("java -jar SensorUSB.jar") == -1:
 		os.chdir(location+'/sensors/sensorUSB')
 		print 'Arrancando sensor USB'
-		subprocess.Popen('java -jar SensorUSB.jar ./input.txt ./output.txt root asdf 1000 138.4.7.191', shell=True)
+		subprocess.Popen('java -jar SensorUSB.jar ./input.txt ./output.txt root asdf 5000 138.4.7.191', shell=True)
 
 def sensorPAE():
 	ps = subprocess.Popen('ps -ef | grep SensorPAE.jar', stdout=subprocess.PIPE, shell=True)
@@ -72,15 +84,15 @@ def sensorPAE():
 	if out.find("java -jar SensorPAE.jar") == -1:
 		os.chdir(location+'/sensors/sensorPAE')
 		print 'Arrancando sensor Presencia-Activos-Estado'
-		subprocess.Popen('java -jar SensorPAE.jar exec 10 root asdf ./input.txt ./output.txt', shell=True)
+		subprocess.Popen('java -jar SensorPAE.jar exec 60 root asdf ./input.txt ./output.txt', shell=True)
 
 
 #SEC()
-tsusen()
-social()
 #nodeJS()
-#ubertooth()
+#tsusen()
+social()
 sensorUSB()
+bluetooth()
 sensorPAE()
 
 

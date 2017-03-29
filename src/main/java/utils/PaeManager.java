@@ -22,14 +22,16 @@ public class PaeManager {
             String input = new String(Files.readAllBytes(Paths.get(path)));
             HashMap value = new Gson().fromJson(input, HashMap.class);
             
-            value.put("Time", System.currentTimeMillis());
+            value.put("Date", System.currentTimeMillis());
             
             output.put("PAE", value);
             
             SensorCollector.receiveNewData(output);
 
-        } catch (IOException ex) {
-            Logger.getLogger(PaeManager.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (Exception ex) {
+            //Logger.getLogger(PaeManager.class.getName()).log(Level.SEVERE, null, ex);
+            System.err.println("Error al acceder a los datos del sensor PAE");
+            new PaeManager(path);
         }
     }
 
