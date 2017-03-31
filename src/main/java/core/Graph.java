@@ -14,7 +14,6 @@ import java.util.HashSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.jgrapht.graph.*;
-
 import control.Dharma;
 import utils.DharmaProperties;
 
@@ -89,7 +88,7 @@ public class Graph {
         this.infoAtt = infoAtt;
 
         currentNode = node;
-        
+
         Iterator<String> it = nodes.iterator();
         while (it.hasNext()) {
             String item = it.next();
@@ -99,7 +98,7 @@ public class Graph {
                 break;
             }
         }
-        
+
         bayesNet.updateProbs(id);
         boolean flag = false;
 
@@ -206,7 +205,6 @@ public class Graph {
         ArrayList<Integer> ids = new ArrayList<>();
 
         for (Graph graphItem : graphs) {
-
             selectedNodes.add(graphItem.getCurrentNode());
             phaseHistories.add(graphItem.getPastNodes());
             markovNodes_.add(graphItem.getFutureNodes());
@@ -214,7 +212,6 @@ public class Graph {
             doneList.add(graphItem.getDone());
             attacks.add(graphItem.getAttack());
             ids.add(graphItem.getMarkovID());
-
         }
 
         if (graphs.isEmpty()) {
@@ -235,6 +232,9 @@ public class Graph {
         writer.close();
     }
 
+    /**
+     * Genera un grafo vacío
+     */
     public static void exportCleanJSON() {
         try {
             Graph graph = new Graph();

@@ -9,7 +9,7 @@ import java.net.UnknownHostException;
 import control.MarkovController;
 
 /**
- * This class represents an receiver of logs coming from different IDSs
+ * This class represents an receiver of logs coming from different IDSs or HMM
  *
  * @author UPM (member of DHARMA Development Team) (http://dharma.inf.um.es)
  * @version 1.0
@@ -52,7 +52,7 @@ public class LogReceiver {
                     socketUDP.receive(packet);
                     String receivedLog = new String(packet.getData(), packet.getOffset(), packet.getLength());
                     if (!receivedLog.equals("")) {
-                        System.out.println(receivedLog);
+                        //System.out.println(receivedLog);
                         if (receivedLog.contains("Finished attack")) {
                             markovController.delete(receivedLog);
                         } else {

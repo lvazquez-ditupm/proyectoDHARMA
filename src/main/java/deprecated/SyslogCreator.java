@@ -1,4 +1,4 @@
-package communications;
+package deprecated;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -11,7 +11,6 @@ import java.util.logging.Level;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import utils.DharmaProperties;
-import utils.SuricataEventParser;
 
 /**
  * This class generates Syslog entries based on logs received

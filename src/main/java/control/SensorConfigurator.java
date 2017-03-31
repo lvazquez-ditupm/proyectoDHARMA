@@ -1,22 +1,15 @@
 package control;
 
 import java.io.BufferedReader;
-import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.io.StringWriter;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.script.ScriptContext;
-import javax.script.ScriptEngine;
-import javax.script.ScriptEngineManager;
 import javax.script.ScriptException;
-import javax.script.SimpleScriptContext;
 import utils.DharmaProperties;
 
 /**
- * This class represents the controller which select the actions related to a
- * certain node of a certain bayesian graph
+ * This class executes all the external modules
  *
  * @author UPM (member of DHARMA Development Team) (http://dharma.inf.um.es)
  * @version 1.0

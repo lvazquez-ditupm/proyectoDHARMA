@@ -1,4 +1,4 @@
-package control;
+package correlator;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -20,7 +20,8 @@ import utils.DharmaProperties;
 
 /**
  *
- * This class sets a data type of each parameter of each sensor log
+ * This class sets a data type of each parameter of each sensor log (help to
+ * correlator)
  *
  * @author UPM (member of DHARMA Development Team) (http://dharma.inf.um.es)
  * @version 1.0
@@ -44,27 +45,18 @@ public class DataCataloger implements Runnable {
         String dirPath;
         String filePath = null;
         int numSensors = 0;
-
         timestampDict = parseConfig(props.getDatasetTimestampsValue());
-
-        System.out.println("****  Detectando directorios con datasets y generando ficheros de configuración ****");
+        System.out.println("****  Detectando directorios con datasets "
+                + "y generando ficheros de configuración ****");
 
         while (true) {
-
             getDirectories(f);
-
             if (numSensors != directories.size()) {
-
                 numSensors = directories.size();
-
                 for (int i = 0; i < numSensors; i++) {
-
                     dirPath = directories.get(i).getAbsolutePath();
-
                     BufferedReader datos = null;
-
                     try {
-
                         String[] header;
                         String[] log;
                         LinkedHashMap<String, String> jsonHeader;
@@ -81,12 +73,9 @@ public class DataCataloger implements Runnable {
                         if (filePath != null) {
 
                             datos = new BufferedReader(new FileReader(filePath));
-
                             header = datos.readLine().split(",");
                             log = datos.readLine().split(",");
-
                             jsonHeader = catalog(log, header);
-
                             json = generateJSON(jsonHeader);
 
                             PrintWriter writer = new PrintWriter(dirPath + "/config.dharma", "UTF-8");
@@ -131,13 +120,10 @@ public class DataCataloger implements Runnable {
                 newHeader.put(oldHeader[i], "nominal");
             }
         }
-
         String mainTime = getMainTime(times);
 
         if (mainTime != null) {
-
             for (Map.Entry<String, String> entry : newHeader.entrySet()) {
-
                 if (entry.getKey().equals(mainTime)) {
                     newHeader.put(entry.getKey(), entry.getValue() + "*");
                 }
@@ -168,10 +154,8 @@ public class DataCataloger implements Runnable {
         if (type.startsWith("(") || type.startsWith("[") || type.startsWith("{")) {
             type = type.substring(1, type.length() - 1);
             types = type.split(",");
-
             SimpleDateFormat refFormat = new SimpleDateFormat("yyyy");
             current = new Date();
-
             try {
                 reference = refFormat.parse("1");
                 Boolean flag = false;
@@ -182,9 +166,10 @@ public class DataCataloger implements Runnable {
                     } catch (ParseException e) {
                         continue;
                     }
-
                     if (flag) {
-                        System.err.println("Se han definido varios timestamps con el mismo nombre (" + timestampID + ") y distinto formato (" + type + "), y es imposible diferenciarlos.");
+                        System.err.println("Se han definido varios timestamps "
+                                + "con el mismo nombre (" + timestampID + ") y distinto "
+                                + "formato (" + type + "), y es imposible diferenciarlos.");
                         System.err.println("Cambie los nombres correspondientes y reinicie DHARMA.");
                         System.exit(0);
                     } else if (current.after(date) && reference.before(date)) {
@@ -192,8 +177,8 @@ public class DataCataloger implements Runnable {
                         candidate = typeItem;
                     }
                 }
-            } catch (ParseException e) {
-
+            } catch (Exception e) {
+                Logger.getLogger(DataCataloger.class.getName()).log(Level.SEVERE, null, e);
             }
         } else {
             candidate = type;
@@ -242,12 +227,14 @@ public class DataCataloger implements Runnable {
 
         for (Map.Entry<String, String> header : jsonHeader.entrySet()) {
             namesList.add(header.getKey());
-            if (header.getValue().contains("numerical") || header.getValue().contains("nominal")) {
+            if (header.getValue().contains("numerical")
+                    || header.getValue().contains("nominal")) {
                 timesMap.put(header.getKey(), "Not a timestamp");
                 typesMap.put(header.getKey(), header.getValue());
             } else if (header.getValue().contains("*")) {
                 mainTime = header.getKey();
-                timesMap.put(header.getKey(), header.getValue().substring(0, header.getValue().length() - 1));
+                timesMap.put(header.getKey(), header.getValue().substring(
+                        0, header.getValue().length() - 1));
                 typesMap.put(header.getKey(), "numerical");
             } else {
                 timesMap.put(header.getKey(), header.getValue());
@@ -326,10 +313,12 @@ public class DataCataloger implements Runnable {
                 if (entry.getValue().contains("w") || entry.getValue().contains("W")) {
                     sum += weekValue;
                 }
-                if (entry.getValue().contains("d") || entry.getValue().contains("D") || entry.getValue().contains("E")) {
+                if (entry.getValue().contains("d") || entry.getValue().contains("D")
+                        || entry.getValue().contains("E")) {
                     sum += dayValue;
                 }
-                if (entry.getValue().contains("H") || entry.getValue().contains("k") || entry.getValue().contains("K") || entry.getValue().contains("h")) {
+                if (entry.getValue().contains("H") || entry.getValue().contains("k")
+                        || entry.getValue().contains("K") || entry.getValue().contains("h")) {
                     sum += hourValue;
                 }
                 if (entry.getValue().contains("m")) {

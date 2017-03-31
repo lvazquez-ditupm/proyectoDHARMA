@@ -8,7 +8,13 @@ import java.util.HashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-
+/**
+ * This class manages RRHH logs. It parses them, checks if they are over a
+ * threshold and adds a date
+ *
+ * @author UPM (member of DHARMA Development Team) (http://dharma.inf.um.es)
+ * @version 1.0
+ */
 public class SocialManager {
 
     private final String path;
@@ -32,9 +38,9 @@ public class SocialManager {
                     value.put("Anomaly", content);
                 }
                 risk = content;
-                
+
                 value.put("Date", System.currentTimeMillis());
-                
+
                 output.put("Social", value);
                 SensorCollector.receiveNewData(output);
             }

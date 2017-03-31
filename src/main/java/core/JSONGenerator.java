@@ -33,12 +33,14 @@ public class JSONGenerator {
      * @param position ID del ataque
      * @param probMarkov probabilidad de estar en el punto actual del HMM
      * @param done porcentaje realizado del ataque
+     * @param infoAtt datos del ataque
      * @param attack tipo de ataque
      * @return string JSON
      */
-    public String individualGenerator(ListenableDirectedGraph<String, DefaultEdge> graph, BayesNetworkManager bnm, String selectedNode,
-            ArrayList<String> phaseHistory, ArrayList<String> markovNodes, int position, double probMarkov, double done, HashMap<String, Object> infoAtt,
-            String attack) {
+    public String individualGenerator(ListenableDirectedGraph<String, DefaultEdge> graph,
+            BayesNetworkManager bnm, String selectedNode, ArrayList<String> phaseHistory,
+            ArrayList<String> markovNodes, int position, double probMarkov, double done,
+            HashMap<String, Object> infoAtt, String attack) {
 
         Gson gson = new Gson();
 
@@ -67,7 +69,7 @@ public class JSONGenerator {
             nodeMap.put("id", i);
             nodeMap.put("title", node);
             if (probs.get(adjustName(node)) != null) {
-                nodeMap.put("prob", df.format(probs.get(adjustName(node))*100));
+                nodeMap.put("prob", df.format(probs.get(adjustName(node)) * 100));
             }
 
             if (selectedNode != null && selectedNode.equals(node)) {
@@ -144,12 +146,13 @@ public class JSONGenerator {
      * @param phaseHistories historiales de nodos
      * @param doneList lista de porcentajes de éxito en ataques
      * @param attacks lista de tipos de ataques
+     * @param ids IDs de los HMM
      * @return string JSON
      */
     public String totalGenerator(ListenableDirectedGraph<String, DefaultEdge> graph,
             ArrayList<String> selectedNodes, ArrayList<ArrayList<String>> nextNodes,
-            ArrayList<ArrayList<String>> phaseHistories, ArrayList<Double> probsMarkov, ArrayList<Double> doneList,
-            ArrayList<String> attacks, ArrayList<Integer> ids) {
+            ArrayList<ArrayList<String>> phaseHistories, ArrayList<Double> probsMarkov,
+            ArrayList<Double> doneList, ArrayList<String> attacks, ArrayList<Integer> ids) {
 
         Gson gson = new Gson();
 
@@ -188,15 +191,17 @@ public class JSONGenerator {
                         nodeMap.put("status", "previous");
                         nodesList.add(nodeMap);
                     }
-                } else if (nodeMap.get("status").toString().contains("current") && node.equals(selectedNodes.get(k))) {
+                } else if (nodeMap.get("status").toString().contains("current")
+                        && node.equals(selectedNodes.get(k))) {
                     String oldValue_ = nodeMap.get("status").toString();
                     String oldValue = oldValue_.substring(oldValue_.indexOf("t") + 1);
                     nodeMap.put("status", "current" + oldValue + "/" + probsMarkov.get(k));
                     nodesList.add(nodeMap);
-                } else if (nodeMap.get("status").toString() == "markov" && (node.equals(selectedNodes.get(k)))) {
+                } else if ("markov".equals(nodeMap.get("status").toString())
+                        && (node.equals(selectedNodes.get(k)))) {
                     nodeMap.put("status", "current" + probsMarkov.get(k));
                     nodesList.add(nodeMap);
-                } else if (nodeMap.get("status").toString() == "previous") {
+                } else if ("previous".equals(nodeMap.get("status").toString())) {
                     if (node.equals(selectedNodes.get(k))) {
                         nodeMap.put("status", "current" + probsMarkov.get(k));
                         nodesList.add(nodeMap);
@@ -248,8 +253,8 @@ public class JSONGenerator {
             historyList.add(pathString);
         }
 
-        ArrayList<HashMap> _nodesList = new ArrayList<>(nodesList.stream().distinct().collect(Collectors.toList())); // Eliminar
-        // duplicados
+        ArrayList<HashMap> _nodesList = new ArrayList<>(
+                nodesList.stream().distinct().collect(Collectors.toList())); // Eliminar duplicados
 
         jsonMap.put("nodes", _nodesList);
         jsonMap.put("edges", edgesList);

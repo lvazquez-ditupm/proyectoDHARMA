@@ -9,8 +9,10 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
+ * This class manages bluetooth anomalies. It parses them and adds a date
  *
- * @author root
+ * @author UPM (member of DHARMA Development Team) (http://dharma.inf.um.es)
+ * @version 1.0
  */
 public class BluetoothManager {
 
@@ -25,18 +27,12 @@ public class BluetoothManager {
             }
             input = input.replace("\n", "");
             String[] addresses = input.split(", ");
-
             anomalies.put("Anomalies", addresses);
             anomalies.put("Date", System.currentTimeMillis());
-
             output.put("Bluetooth", anomalies);
-
             SensorCollector.receiveNewData(output);
-
         } catch (IOException ex) {
             Logger.getLogger(BluetoothManager.class.getName()).log(Level.SEVERE, null, ex);
         }
-
     }
-
 }

@@ -10,8 +10,7 @@ import java.net.URLDecoder;
 import java.util.Properties;
 
 /**
- * This class allows to get the required configuration parameters to run the
- * evaluationSystemExecutor package.
+ * This class allows to get the required configuration parameters to run DHARMA
  *
  * @author UPM (member of DHARMA Development Team)(http://dharma.inf.um.es)
  * @version 1.0
@@ -34,6 +33,7 @@ public class DharmaProperties {
     private static final String SYSLOG_PERIOD_PROP = "syslog.period";
     private static final String ANOMALY_PATHS_PROP = "anomaly.paths";
     private static final String SOCIAL_THRESHOLD_PROP = "social.threshold";
+    private static final String SEC_INPUT_FILE_PROP = "sec.input.file";
 
     //Valores de los parametros del fichero properties
     private static String DHARMA_PATH_VALUE;
@@ -48,6 +48,7 @@ public class DharmaProperties {
     private static String SYSLOG_PERIOD_VALUE;
     private static String ANOMALY_PATHS_VALUE;
     private static String SOCIAL_THRESHOLD_VALUE;
+    private static String SEC_INPUT_FILE_VALUE;
 
     public DharmaProperties() {
         dharmaproperties = new Properties();
@@ -72,6 +73,7 @@ public class DharmaProperties {
             SYSLOG_PERIOD_VALUE = dharmaproperties.getProperty(SYSLOG_PERIOD_PROP);
             ANOMALY_PATHS_VALUE = dharmaproperties.getProperty(ANOMALY_PATHS_PROP);
             SOCIAL_THRESHOLD_VALUE = dharmaproperties.getProperty(SOCIAL_THRESHOLD_PROP);
+            SEC_INPUT_FILE_VALUE = dharmaproperties.getProperty(SEC_INPUT_FILE_PROP);
             validate();
         } catch (IOException e) {
             throw new RuntimeException("Could not read config module config. (File: " + DHARMA_PROPERTIES_FILE + ")", e);
@@ -136,6 +138,10 @@ public class DharmaProperties {
             System.out.println("Property \"" + SOCIAL_THRESHOLD_PROP
                     + "\" not defined.");
         }
+        if (null == SEC_INPUT_FILE_VALUE) {
+            System.out.println("Property \"" + SEC_INPUT_FILE_PROP
+                    + "\" not defined.");
+        }
     }
 
     public String getDharmaPathValue() {
@@ -177,12 +183,16 @@ public class DharmaProperties {
     public String getSyslogPeriodValue() {
         return SYSLOG_PERIOD_VALUE;
     }
-    
+
     public String getAnomalyPathsValue() {
         return ANOMALY_PATHS_VALUE;
     }
-    
+
     public String getSocialThresholdValue() {
         return SOCIAL_THRESHOLD_VALUE;
+    }
+
+    public String getSECInputFileValue() {
+        return SEC_INPUT_FILE_VALUE;
     }
 }

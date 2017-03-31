@@ -1,4 +1,4 @@
-package utils;
+package correlator;
 
 import com.google.gson.Gson;
 import java.io.FileNotFoundException;
@@ -7,11 +7,12 @@ import java.io.UnsupportedEncodingException;
 import java.util.HashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import utils.DharmaProperties;
 
 /**
  *
  * This class creates a global config file with active and non-active periods,
- * in order to differentiate log
+ * in order to differentiate logs
  *
  * @author UPM (member of DHARMA Development Team) (http://dharma.inf.um.es)
  * @version 1.0

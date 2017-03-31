@@ -1,6 +1,7 @@
 package communications;
 
 import control.Dharma;
+import core.ReasonerInput;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
@@ -8,7 +9,6 @@ import java.util.HashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import utils.DharmaProperties;
-import utils.SECEventParser;
 
 /**
  * This class represents the detector of new SEC events written in a file
@@ -16,14 +16,10 @@ import utils.SECEventParser;
  * @author UPM (member of DHARMA Development Team) (http://dharma.inf.um.es)
  * @version 1.0
  */
-@Deprecated
 public class SECEventReceiver implements Runnable {
 
     private final DharmaProperties props = new DharmaProperties();
     Dharma dharma = new Dharma();
-
-    public SECEventReceiver() {
-    }
 
     @Override
     public void run() {
@@ -39,14 +35,8 @@ public class SECEventReceiver implements Runnable {
                     while (idmefDatos.ready()) {
                         str = idmefDatos.readLine();
                         if (!str.equals("")) {
-                            // HashMap<String, Object> nodeData =
-                            // SECEventParser.parse(str);
-                            HashMap<String, Object> nodeData = new HashMap<>();
-                            nodeData.put("node", str);
-                            if (!nodeData.isEmpty()) {
-                                //TODO
-                            }
-
+                            HashMap superEvent = parseSECString(str);
+                            ReasonerInput.newSuperEvent(superEvent);
                         }
                     }
                 } catch (IOException ex) {
@@ -56,6 +46,11 @@ public class SECEventReceiver implements Runnable {
         } catch (Exception e) {
             e.printStackTrace();
         }
+    }
+
+    private HashMap parseSECString(String str) {
+        //TODO
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
 }

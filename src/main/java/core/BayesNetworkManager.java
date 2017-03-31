@@ -3,6 +3,13 @@ package core;
 import java.util.HashMap;
 import smile.Network;
 
+/**
+ * This class manages the Bayes Net, in order to know the probabilities of
+ * reaching a node
+ *
+ * @author UPM (member of DHARMA Development Team) (http://dharma.inf.um.es)
+ * @version 1.0
+ */
 public class BayesNetworkManager {
 
     private Network net;
@@ -26,7 +33,6 @@ public class BayesNetworkManager {
                 if (net.getParentIds(node).length == 0) {
                     double[] rootProb = {0.5, 0.5};
                     net.setNodeDefinition(node, rootProb);
-
                 } else {
                     double[] childProb = calcProbs(node, net.getParentIds(node));
                     net.setNodeDefinition(node, childProb);
@@ -56,9 +62,7 @@ public class BayesNetworkManager {
         HashMap<String, Double> res = new HashMap<>();
         net.updateBeliefs();
         for (String node : nodes) {
-
             res.put(node, net.getNodeValue(adjustName(node))[1]);
-
         }
         return res;
     }

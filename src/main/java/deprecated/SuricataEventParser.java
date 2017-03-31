@@ -1,4 +1,4 @@
-package utils;
+package deprecated;
 
 import java.util.HashMap;
 import java.util.LinkedHashMap;

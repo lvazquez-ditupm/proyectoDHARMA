@@ -11,7 +11,7 @@ import java.util.logging.Logger;
 import utils.DharmaProperties;
 
 /**
- * This class represents the DHARMA main
+ * This class represents the DHARMA main functionalities
  *
  * @author UPM (member of DHARMA Development Team) (http://dharma.inf.um.es)
  * @version 1.0
@@ -20,10 +20,6 @@ public class Dharma {
 
     private static ArrayList<Graph> graphList = new ArrayList<>();
     private static final DharmaProperties props = new DharmaProperties();
-
-    public Dharma() {
-
-    }
 
     /**
      * Crea una nueva red bayesiana a partir del JSON almacenado en la ruta
@@ -90,10 +86,8 @@ public class Dharma {
         ArrayList<Integer> existingGraphs = new ArrayList<>();
         String nombre;
         int id;
-
         existingGraphs.add(0);
         for (Graph graph : graphList) {
-
             existingGraphs.add(graph.getMarkovID());
             visibleGraphList.add(graph);
         }
