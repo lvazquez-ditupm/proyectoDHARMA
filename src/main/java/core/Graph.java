@@ -53,7 +53,7 @@ public class Graph {
         } catch (IOException ex) {
             Logger.getLogger(Graph.class.getName()).log(Level.SEVERE, null, ex);
         }
-        bayesNet = new BayesNetworkManager(markovID);
+        bayesNet = new BayesNetworkManager();
     }
 
     public Graph() {
@@ -99,7 +99,6 @@ public class Graph {
             }
         }
 
-        bayesNet.updateProbs(id);
         boolean flag = false;
 
         it = nodes.iterator();

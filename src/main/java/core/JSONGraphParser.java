@@ -3,7 +3,14 @@ package core;
 import java.util.HashMap;
 import java.util.Map;
 import com.google.gson.Gson;
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.Writer;
 import java.util.HashSet;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import smile.Network;
 
 /**
@@ -13,9 +20,6 @@ import smile.Network;
  * @version 1.0
  */
 public class JSONGraphParser {
-
-    public JSONGraphParser() {
-    }
 
     /**
      * Parsea el JSON para obtener los nodos y enlaces
@@ -80,13 +84,39 @@ public class JSONGraphParser {
         parsedGraph.put("nodes", exportedNodes);
         parsedGraph.put("edges", exportedEdges);
 
-        net.writeFile("bayesNet" + hmmId + ".xdsl");
+        if (!new File("bayesNet.xdsl").exists()) {
+            net.writeFile("bayesNet.xdsl");
+        }
+        if (!new File("bayesNet.txt").exists()) {
+            Writer output = null;
+            try {
+                String[] nodesArray = net.getAllNodeIds();
+                String newLine = "";
+                for (String node : nodesArray) {
+                    newLine+=node+",";
+                }
+                newLine = newLine.substring(0, newLine.length() - 1);
+                newLine += "\n";
+                output = new BufferedWriter(new FileWriter("./bayesNet.txt", true));
+                output.append(newLine);
+                output.close();
+            } catch (IOException ex) {
+                Logger.getLogger(JSONGraphParser.class.getName()).log(Level.SEVERE, null, ex);
+            } finally {
+                try {
+                    output.close();
+                } catch (IOException ex) {
+                    Logger.getLogger(JSONGraphParser.class.getName()).log(Level.SEVERE, null, ex);
+                }
+            }
+        }
         return parsedGraph;
 
     }
 
     /**
      * Cambia los espacios por barras bajas en los nombres de los nodos
+     *
      * @param name nombre del nodo
      */
     private String adjustName(String name) {

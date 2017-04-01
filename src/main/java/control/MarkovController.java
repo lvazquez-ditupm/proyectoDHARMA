@@ -26,9 +26,6 @@ public class MarkovController {
     private String timestamp = "";
     HashMap<String, Object> infoAtt = new HashMap<>();
 
-    public MarkovController() {
-    }
-
     /**
      * Se encarga de parsear el log recibido del HMM y registra el ataque para
      * futuras actualizaciones

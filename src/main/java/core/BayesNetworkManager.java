@@ -1,7 +1,20 @@
 package core;
 
+import java.io.BufferedWriter;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.Writer;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import smile.Network;
+import smile.learning.DataMatch;
+import smile.learning.DataSet;
+import smile.learning.EM;
 
 /**
  * This class manages the Bayes Net, in order to know the probabilities of
@@ -15,31 +28,27 @@ public class BayesNetworkManager {
     private Network net;
     private String[] nodes;
 
-    public BayesNetworkManager(int id) {
+    public BayesNetworkManager() {
         net = new Network();
-        net.readFile("bayesNet" + id + ".xdsl");
+        net.readFile("bayesNet.xdsl");
         nodes = net.getAllNodeIds();
     }
 
     /**
-     * Actualiza las tablas de probabilidad condicional de aquellos nodos que no
-     * hayan tenido una evidencia
+     * Actualiza las tablas de probabilidad condicional
      *
-     * @param id identificador de grafo
      */
-    public void updateProbs(int id) {
-        for (String node : nodes) {
-            if (!net.isEvidence(node)) {
-                if (net.getParentIds(node).length == 0) {
-                    double[] rootProb = {0.5, 0.5};
-                    net.setNodeDefinition(node, rootProb);
-                } else {
-                    double[] childProb = calcProbs(node, net.getParentIds(node));
-                    net.setNodeDefinition(node, childProb);
-                }
-            }
-        }
-        net.writeFile("bayesNet" + id + ".xdsl");
+    public void updateProbs() {
+        DataSet ds = new DataSet();
+        ds.readFile("bayesNet.txt");
+        ds.matchNetwork(net);
+        DataMatch[] matching = ds.matchNetwork(net);
+        final EM em = new EM();
+        em.setEqSampleSize(5);
+        em.setRandomizeParameters(true);
+        em.learn(ds, net, matching);
+        net.updateBeliefs();
+        net.writeFile("bayesNet.xdsl");
     }
 
     /**
@@ -48,7 +57,7 @@ public class BayesNetworkManager {
      * @param node nodo
      */
     public void eventOcurred(String node) {
-        net.setEvidence(adjustName(node), "True");
+        net.setEvidence(spacesToUnderscore(node), "True");
         net.updateBeliefs();
         filterNodes();
     }
@@ -62,38 +71,9 @@ public class BayesNetworkManager {
         HashMap<String, Double> res = new HashMap<>();
         net.updateBeliefs();
         for (String node : nodes) {
-            res.put(node, net.getNodeValue(adjustName(node))[1]);
+            res.put(node, net.getNodeValue(spacesToUnderscore(node))[1]);
         }
         return res;
-    }
-
-    /**
-     * Calcula las tablas de probabilidad condicional de un nodo
-     *
-     * @param node nodo
-     * @param parentIds nodos padres
-     * @return CPT
-     */
-    private double[] calcProbs(String node, String[] parentIds) {
-        double[] probTrue = new double[(int) Math.pow(2, parentIds.length)];
-        double[] probFalse = new double[(int) Math.pow(2, parentIds.length)];
-        double[] cpt = new double[(int) Math.pow(2, parentIds.length + 1)];
-
-        for (int i = 0; i < probTrue.length; i++) {
-            probTrue[i] = Math.random();
-        }
-
-        for (int i = 0; i < probTrue.length; i++) {
-            probFalse[i] = 1 - probTrue[i];
-        }
-
-        int j = 0;
-        for (int i = 0; i < cpt.length; i += 2) {
-            cpt[i] = probTrue[j];
-            cpt[i + 1] = probFalse[j];
-            j++;
-        }
-        return cpt;
     }
 
     /**
@@ -167,10 +147,50 @@ public class BayesNetworkManager {
     /**
      * Elimina los espacios cambiándolos por barras bajas
      */
-    private String adjustName(String name) {
+    private String spacesToUnderscore(String name) {
         if (name.contains(" ")) {
             name = name.replace(" ", "_");
         }
         return name;
+    }
+
+    /**
+     * Cambia las barras bajas por espacios
+     */
+    private static String underscoreToSpace(String name) {
+        if (name.contains("_")) {
+            name = name.replace("_", " ");
+        }
+        return name;
+    }
+
+    /**
+     * Actualiza el dataset de aprendizaje de la red
+     *
+     * @param nodes nodos transcurridos hasta la finalización del ataque
+     */
+    public static void updateHistory(ArrayList<String> nodes) {
+        try {
+            Path myPath = Paths.get("./bayesNet.txt");
+            String[] strArray = Files.lines(myPath).map(s -> s.split(",")).findFirst().get();
+            String newLine = "";
+            for (String item : strArray) {
+                if (nodes.contains(underscoreToSpace(item))) {
+                    newLine += "True,";
+                } else {
+                    newLine += "False,";
+                }
+            }
+            newLine = newLine.substring(0, newLine.length() - 1);
+            newLine += "\n";
+            Writer output = new BufferedWriter(new FileWriter("./bayesNet.txt", true));
+            output.append(newLine);
+            output.close();
+            new BayesNetworkManager().updateProbs();
+
+        } catch (IOException ex) {
+            Logger.getLogger(BayesNetworkManager.class.getName()).log(Level.SEVERE, null, ex);
+        }
+
     }
 }

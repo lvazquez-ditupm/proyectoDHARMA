@@ -1,5 +1,6 @@
 package control;
 
+import core.BayesNetworkManager;
 import core.Graph;
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -24,6 +25,7 @@ public class Dharma {
     /**
      * Crea una nueva red bayesiana a partir del JSON almacenado en la ruta
      * determinada en la configuración del sistema
+     *
      * @param markovID identificador del HMM
      */
     public void startNewGraph(int markovID) {
@@ -113,6 +115,7 @@ public class Dharma {
         try {
             for (Graph graph : graphList) {
                 if (graph.getMarkovID() == id) {
+                    BayesNetworkManager.updateHistory(graph.getPastNodes());
                     graphList.remove(graph);
                     break;
                 }

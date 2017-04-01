@@ -31,20 +31,20 @@ public class Main {
             Graph.exportCleanJSON();
             markovController = new MarkovController();
             markovController.parse("IDAtaque=1;TipoAtaque=Denegacion de Servicio;Nodos=Intento de intrusion,Buffer Overflow,Denegacion de Servicio;Estado=Buffer Overflow;PEstado=0.9998914037855784;PFinal=0.6231988799803523;Risk=2;Markovid=1");
-            
+            Dharma dharma = new Dharma();
+            dharma.removeGraph(1);
             //eventReceiver = new SECEventReceiver();
             //new Thread(eventReceiver).start();
             //ActivePeriods.create();
-            
-            sensorConfigurator = new SensorConfigurator();
+            /*sensorConfigurator = new SensorConfigurator();
             new Thread(sensorConfigurator).start();
             
             sensorCollector = new SensorCollector(props.getAnomalyPathsValue());
             new Thread(sensorCollector).start();
-            
+             */
             //dataCataloger = new DataCataloger();
             //new Thread(dataCataloger).start();
-            
+
             logReceiver = new LogReceiver(5000, "127.0.0.1");
             logReceiver.start();
 
