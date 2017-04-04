@@ -63,7 +63,7 @@ def bt2():
 def bluetooth():
 	with open(pathsFile, "a") as myfile:
 		myfile.write("BLUETOOTH///"+location+"/sensors/bluetooth/output.txt\r")
-	#bt1()
+	bt1()
 	bt2()
 	
 def sensorUSB():
@@ -88,7 +88,7 @@ def sensorPAE():
 
 
 #SEC()
-#nodeJS()
+nodeJS()
 #tsusen()
 social()
 sensorUSB()

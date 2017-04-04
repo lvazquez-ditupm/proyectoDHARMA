@@ -16,8 +16,8 @@ import java.util.HashMap;
  */
 public class ReasonerInput {
 
-    private static HashMap<Long, HashMap> superEvents = new HashMap<>();
-    private static HashMap<Long, HashMap> dataMaps = new HashMap<>();
+    private static HashMap<Double, HashMap> superEvents = new HashMap<>();
+    private static HashMap<Double, HashMap> dataMaps = new HashMap<>();
 
     public static void newSuperEvent(HashMap superEvent) {
         //TODO Llevar a una base de datos en lugar de variables
@@ -25,13 +25,13 @@ public class ReasonerInput {
         if (dataMaps.containsKey(timestamp)) {
             prepareReasoner(dataMaps.get(timestamp), superEvents.get(timestamp));
         } else {
-            superEvents.put(timestamp, superEvent);
+            superEvents.put((double) timestamp, superEvent);
         }
     }
 
     public static void newDataMap(HashMap dataMap) {
         //TODO Llevar a una base de datos en lugar de variables
-        long timestamp = (long) dataMap.get("Timestamp");
+        Double timestamp = (Double) dataMap.get("Timestamp");
         if (superEvents.containsKey(timestamp)) {
             prepareReasoner(dataMaps.get(timestamp), superEvents.get(timestamp));
         } else {

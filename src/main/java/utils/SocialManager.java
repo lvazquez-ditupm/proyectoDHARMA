@@ -36,13 +36,12 @@ public class SocialManager {
             if (content != risk) {
                 if (content >= Double.parseDouble(props.getSocialThresholdValue())) {
                     value.put("Anomaly", content);
+                    value.put("Date", System.currentTimeMillis());
+                    output.put("Social", value);
+                    SensorCollector.receiveNewData(output);
                 }
                 risk = content;
 
-                value.put("Date", System.currentTimeMillis());
-
-                output.put("Social", value);
-                SensorCollector.receiveNewData(output);
             }
         } catch (IOException ex) {
             Logger.getLogger(SocialManager.class.getName()).log(Level.SEVERE, null, ex);

@@ -1,6 +1,5 @@
 BeEF,Intento_de_intrusion,Reverse_Shell,Sudo,Acciones_SYSTEM,Filtracion,Persistencia,Denegacion_de_Servicio,Buffer_Overflow
-False,True,False,False,False,False,False,False,True
-False,True,False,False,False,False,False,False,True
-False,True,False,False,False,False,False,False,True
-False,True,False,False,False,False,False,False,True
-False,True,False,False,False,False,False,False,True
+False,True,False,False,False,False,False,True,True
+False,True,False,False,False,False,False,True,True
+False,True,False,False,False,False,False,True,True
+False,True,False,False,False,False,False,True,True

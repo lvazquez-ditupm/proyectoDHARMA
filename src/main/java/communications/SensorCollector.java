@@ -26,6 +26,7 @@ import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import utils.BluetoothManager;
+import utils.CorrelatorManager;
 import utils.DharmaProperties;
 import utils.PaeManager;
 import utils.SocialManager;
@@ -136,6 +137,9 @@ public class SensorCollector implements Runnable {
                 case "PAE":
                     new PaeManager(path_);
                     break;
+                case "CORRELATOR":
+                    new CorrelatorManager(path_);
+                    break;
                 default:
                     break;
             }
@@ -155,17 +159,15 @@ public class SensorCollector implements Runnable {
         String info = gson.toJson(infoMap);
         long timestamp = System.currentTimeMillis();
 
-        if (event.equals("Correlator")) {
-            //CHECK!
+        if (event.contains("Correlator")) {
             Iterator<Map.Entry<String, Object>> entries = infoMap.entrySet().iterator();
             while (entries.hasNext()) {
                 Map.Entry<String, Object> entry = entries.next();
                 if (!((entry.getValue().equals("{}") || entry.getKey().equals("Time") || entry.getKey().equals("Date")))) {
                     HashMap output = new HashMap();
                     output.put("Anomaly", infoMap.get(entry.getKey()));
-                    output.put("Time", infoMap.get("Time"));
                     output.put("Date", infoMap.get("Date"));
-                    sendToCorrelator("Correlator-" + entry.getKey() + "///" + gson.toJson(output) + "///" + timestamp);
+                    sendToCorrelator(event + "///" + gson.toJson(output) + "///" + timestamp);
                 }
             }
         } else if (event.equals("PAE")) {
