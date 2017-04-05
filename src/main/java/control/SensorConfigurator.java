@@ -22,17 +22,12 @@ public class SensorConfigurator implements Runnable {
     public void run() {
 
         System.out.println("****  Iniciando sensores  ****");
-        stopAll();
         try {
             execPython();
         } catch (ScriptException | IOException ex) {
             Logger.getLogger(SensorConfigurator.class.getName()).log(Level.SEVERE, null, ex);
         }
 
-    }
-
-    private static void stopAll() {
-        //TODO
     }
 
     /**

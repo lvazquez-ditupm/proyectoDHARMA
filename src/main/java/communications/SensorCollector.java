@@ -11,6 +11,7 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.nio.file.FileSystems;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import static java.nio.file.StandardWatchEventKinds.ENTRY_CREATE;
 import static java.nio.file.StandardWatchEventKinds.ENTRY_MODIFY;
@@ -73,6 +74,7 @@ public class SensorCollector implements Runnable {
     @Override
     public void run() {
         WatchService watcher;
+
         try {
             watcher = FileSystems.getDefault().newWatchService();
             String[] input = new String(Files.readAllBytes(Paths.get(props.getAnomalyPathsValue()))).split("\r");
@@ -97,9 +99,9 @@ public class SensorCollector implements Runnable {
 
                 for (WatchEvent<?> event : key.pollEvents()) {
                     WatchEvent.Kind<?> kind = event.kind();
-
                     if (kind == ENTRY_MODIFY || kind == ENTRY_CREATE) {
-                        SensorCollector.processData();
+                        Path changed = (Path) key.watchable();
+                        SensorCollector.processData(getSensor(input, changed));
                     }
                 }
 
@@ -120,29 +122,25 @@ public class SensorCollector implements Runnable {
      * En función del sensor, manda el dato recibido al procesador
      * correspondiente
      */
-    private static void processData() {
-        for (String path : paths) {
-            String item = path.split("///")[0];
-            String path_ = path.split("///")[1];
-            switch (item) {
-                case "SOCIAL":
-                    new SocialManager(path_);
-                    break;
-                case "BLUETOOTH":
-                    new BluetoothManager(path_);
-                    break;
-                case "USB":
-                    new UsbManager(path_);
-                    break;
-                case "PAE":
-                    new PaeManager(path_);
-                    break;
-                case "CORRELATOR":
-                    new CorrelatorManager(path_);
-                    break;
-                default:
-                    break;
-            }
+    private static void processData(String[] data) {
+        switch (data[0]) {
+            case "SOCIAL":
+                new SocialManager(data[1]);
+                break;
+            case "BLUETOOTH":
+                new BluetoothManager(data[1]);
+                break;
+            case "USB":
+                new UsbManager(data[1]);
+                break;
+            case "PAE":
+                new PaeManager(data[1]);
+                break;
+            case "CORRELATOR":
+                new CorrelatorManager(data[1]);
+                break;
+            default:
+                break;
         }
     }
 
@@ -210,5 +208,24 @@ public class SensorCollector implements Runnable {
         } finally {
             writer.close();
         }
+    }
+
+    private String[] getSensor(String[] sensor, Path path) {
+        String[] output = new String[2];
+        for (String line : sensor) {
+            String sensorItem = line.split("///")[0];
+            File pathItem = new File(line.split("///")[1]);
+
+            String directory = pathItem.getParent().toString();
+            if (directory.equals(path.toString())) {
+                output[0] = sensorItem;
+                output[1] = pathItem.getParent().toString()+"/output.txt";
+                break;
+            } else {
+                continue;
+            }
+        }
+
+        return output;
     }
 }
