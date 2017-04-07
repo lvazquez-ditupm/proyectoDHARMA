@@ -2,6 +2,7 @@ package control;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import utils.NetworkManager;
 
 /**
  * This class parses HMM logs and manages the different chains created
@@ -34,7 +35,6 @@ public class MarkovController {
      */
     public void parse(String markovLog) {
 
-        HashMap<String, Object> markovMap = new HashMap<>();
         data = new HashMap<>();
         nodes = new ArrayList<>();
 
@@ -84,8 +84,8 @@ public class MarkovController {
         data.put("node", node);
         data.put("prob", probMarkov);
         data.put("done", done);
-        markovMap.put("node", node);
-        dharma.processEvent(markovMap, nodes, markovID, probMarkov, done, infoAtt, attack);
+        NetworkManager.processData(node, nodes, markovID, probMarkov, done, infoAtt, attack);
+        dharma.processEvent(node, nodes, markovID, probMarkov, done, infoAtt, attack);
     }
 
     /**

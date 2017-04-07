@@ -36,7 +36,7 @@ public class Dharma {
     /**
      * Procesa un evento recibido, actualizando el grafo o creando uno nuevo
      *
-     * @param eventMap evento recibido
+     * @param node nodo actual
      * @param nodes nodos involucrados en el ataque
      * @param markovID ID de la cadena que lleva el evento
      * @param infoAtt otros datos sobre el ataque
@@ -44,21 +44,21 @@ public class Dharma {
      * @param done porcentaje del ataque realizado
      * @param attack nombre del ataque
      */
-    public void processEvent(HashMap<String, Object> eventMap, ArrayList<String> nodes, int markovID,
+    public void processEvent(String node, ArrayList<String> nodes, int markovID,
             double probMarkov, double done, HashMap<String, Object> infoAtt, String attack) {
 
         try {
             if (graphList.isEmpty()) {
                 startNewGraph(markovID);
                 Graph graph = graphList.get(graphList.size() - 1);
-                graph.setPosition((String) eventMap.get("node"), markovID,
+                graph.setPosition(node, markovID,
                         graphList, nodes, probMarkov, done, infoAtt, attack);
 
             } else {
                 boolean flag = false;
                 for (Graph graph : graphList) {
                     if (graph.getMarkovID() == markovID) {
-                        graph.setPosition((String) eventMap.get("node"), markovID,
+                        graph.setPosition(node, markovID,
                                 graphList, nodes, probMarkov, done, infoAtt, attack);
                         flag = true;
                         break;
@@ -67,7 +67,7 @@ public class Dharma {
                 if (!flag) {
                     startNewGraph(markovID);
                     Graph graph = graphList.get(graphList.size() - 1);
-                    graph.setPosition((String) eventMap.get("node"), markovID,
+                    graph.setPosition(node, markovID,
                             graphList, nodes, probMarkov, done, infoAtt, attack);
                 }
             }
