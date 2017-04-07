@@ -10,14 +10,17 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.nio.file.FileSystems;
+import java.nio.file.FileVisitResult;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.SimpleFileVisitor;
 import static java.nio.file.StandardWatchEventKinds.ENTRY_CREATE;
 import static java.nio.file.StandardWatchEventKinds.ENTRY_MODIFY;
 import java.nio.file.WatchEvent;
 import java.nio.file.WatchKey;
 import java.nio.file.WatchService;
+import java.nio.file.attribute.BasicFileAttributes;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -83,7 +86,14 @@ public class SensorCollector implements Runnable {
                 inputItem = inputItem.substring(inputItem.indexOf("///"));
                 File file = new File(inputItem);
                 if (file.isDirectory()) {
-                    Paths.get(inputItem).register(watcher, ENTRY_MODIFY, ENTRY_CREATE);
+                    //Paths.get(inputItem).register(watcher, ENTRY_MODIFY, ENTRY_CREATE);
+                    Files.walkFileTree(file.toPath(), new SimpleFileVisitor<Path>() {
+                        public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs)
+                                throws IOException {
+                            dir.register(watcher, ENTRY_CREATE, ENTRY_MODIFY);
+                            return FileVisitResult.CONTINUE;
+                        }
+                    });
                 } else {
                     Paths.get(file.getParent().toString()).register(watcher, ENTRY_MODIFY, ENTRY_CREATE);
                 }
@@ -215,15 +225,21 @@ public class SensorCollector implements Runnable {
         for (String line : sensor) {
             String sensorItem = line.split("///")[0];
             File pathItem = new File(line.split("///")[1]);
-
-            String directory = pathItem.getParent().toString();
-            if (directory.equals(path.toString())) {
-                output[0] = sensorItem;
-                output[1] = pathItem.getParent().toString()+"/output.txt";
-                break;
+            String directory;
+            if (!pathItem.isDirectory()) {
+                directory = pathItem.getParent();
             } else {
-                continue;
+                directory = pathItem.toString();
             }
+            if (!sensorItem.equals("CORRELATOR") && directory.equals(path.toString())) {
+                output[0] = sensorItem;
+                output[1] = pathItem.getParent() + "/output.txt";
+                break;
+            } else if (sensorItem.equals("CORRELATOR") && path.toString().contains(directory)) {
+                output[0] = sensorItem;
+                output[1] = path.toString();
+                break;
+            } 
         }
 
         return output;

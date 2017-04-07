@@ -19,7 +19,6 @@ import java.util.HashMap;
 public class CorrelatorManager {
 
     private final File f;
-    private List<File> directories = new ArrayList<>();
     private List<File> files;
     private Gson gson = new Gson();
 
@@ -30,17 +29,14 @@ public class CorrelatorManager {
 
     public CorrelatorManager(String path) {
         f = new File(path);
-        getDirectories(f);
 
-        for (File dir : directories) {
-            getFiles(dir);
-            for (File file : files) {
-                if (file.getName().contains("anomalies")) {
-                    try {
-                        anomaliesTotal.put(file.getName(), getAnomalies(new String(Files.readAllBytes(file.toPath()), "UTF-8")));
-                    } catch (IOException ex) {
-                        Logger.getLogger(CorrelatorManager.class.getName()).log(Level.SEVERE, null, ex);
-                    }
+        getFiles(f);
+        for (File file : files) {
+            if (file.getName().contains("anomalies")) {
+                try {
+                    anomaliesTotal.put(file.getName(), getAnomalies(new String(Files.readAllBytes(file.toPath()), "UTF-8")));
+                } catch (IOException ex) {
+                    Logger.getLogger(CorrelatorManager.class.getName()).log(Level.SEVERE, null, ex);
                 }
             }
         }
@@ -51,22 +47,6 @@ public class CorrelatorManager {
 
         SensorCollector.receiveNewData(output);
 
-    }
-
-    /**
-     * Devuelve una lista con todos los directorios existentes en uno dado
-     *
-     * @param root directorio raiz
-     */
-    private void getDirectories(File root) {
-
-        File[] files = root.listFiles();
-
-        for (File file : files) {
-            if (file.isDirectory()) {
-                directories.add(file);
-            }
-        }
     }
 
     /**

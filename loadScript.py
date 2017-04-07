@@ -73,13 +73,15 @@ def corr1():
 		os.chdir(location+"/sensors/bluetooth")
 		subprocess.Popen('java -jar SensorBluetooth.jar exec 60 root asdf ./input.txt ./output.txt', shell=True)
 
+'''
 def corr2():
-
+	with open(pathsFile, "a") as myfile:
+		myfile.write("CORRELATOR///"+location+'/../becadit/storedData\r')
 
 def correlator():
-	corr1()
+	#corr1()
 	corr2()
-'''
+
 
 def sensorUSB():
 	ps = subprocess.Popen('ps -ef | grep SensorUSB.jar', stdout=subprocess.PIPE, shell=True)
@@ -103,12 +105,12 @@ def sensorPAE():
 
 
 #SEC()
-nodeJS()
+#nodeJS()
 #tsusen()
-social()
-sensorUSB()
-bluetooth()
-sensorPAE()
-
+#social()
+#sensorUSB()
+#bluetooth()
+#sensorPAE()
+correlator()
 
 

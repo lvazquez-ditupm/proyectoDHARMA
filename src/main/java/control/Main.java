@@ -36,7 +36,7 @@ public class Main {
             Dharma dharma = new Dharma();
             //dharma.removeGraph(1);
 
-            new CorrelatorManager("/home/saturno/NetBeansProjects/becadit/storedData");
+            //new CorrelatorManager("/home/saturno/NetBeansProjects/becadit/storedData");
 
             //eventReceiver = new SECEventReceiver();
             //new Thread(eventReceiver).start();
