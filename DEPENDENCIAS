@@ -1,3 +1,6 @@
+#R
+bajar tar, ./configure, make, sudo make install
+
 #SEC
 Descargar, cambiar la ruta a Perl en el fichero sec y copiarlo a donde esté Perl
 cp sec /usr/bin 

@@ -7,6 +7,8 @@ import java.net.InetAddress;
 import java.net.SocketException;
 import java.net.UnknownHostException;
 import control.MarkovController;
+import utils.IDSManager;
+import utils.NetAnomManager;
 
 /**
  * This class represents an receiver of logs coming from different IDSs or HMM
@@ -55,6 +57,10 @@ public class LogReceiver {
                         //System.out.println(receivedLog);
                         if (receivedLog.contains("Finished attack")) {
                             markovController.delete(receivedLog);
+                        } else if (receivedLog.contains("IDS///")) {
+                            new IDSManager(receivedLog.substring(6));
+                        } else if (receivedLog.contains("NetAnom///")) {
+                            new NetAnomManager(receivedLog.substring(10));
                         } else {
                             markovController.parse(receivedLog);
                         }

@@ -8,6 +8,8 @@ import java.util.HashMap;
 /**
  * This class handles the HMM data in order to be used as a network sensor
  *
+ * @author UPM (member of DHARMA Development Team) (http://dharma.inf.um.es)
+ * @version 1.0
  */
 public class NetworkManager {
 
@@ -18,7 +20,7 @@ public class NetworkManager {
         HashMap HMM = new HashMap<>();
         HashMap data = new HashMap<>();
         Gson gson = new Gson();
-        
+
         HMM.put("node", node);
         HMM.put("nodes", nodes);
         HMM.put("ID", markovID);

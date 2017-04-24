@@ -64,22 +64,24 @@ def bluetooth():
 	#bt1()
 	bt2()
 
-'''
-def corr1():
-	ps = subprocess.Popen('ps -ef | grep Rscript', stdout=subprocess.PIPE, shell=True)
-	(out, err) = ps.communicate()
-	if out.find("java -jar SensorBluetooth.jar") == -1:
-		print 'Arrancando correlador (motor de correlacion)'
-		os.chdir(location+"/sensors/bluetooth")
-		subprocess.Popen('java -jar SensorBluetooth.jar exec 60 root asdf ./input.txt ./output.txt', shell=True)
 
-'''
+def corr1():
+	print 'Arrancando correlador (motor de correlacion)'
+	os.chdir(location+"/../becadit/")
+	subprocess.Popen('Rscript resetServer.R', shell=True)
+
+
 def corr2():
+	ps = subprocess.Popen('ps -ef | grep node', stdout=subprocess.PIPE, shell=True)
+	(out, err) = ps.communicate()
 	with open(pathsFile, "a") as myfile:
 		myfile.write("CORRELATOR///"+location+'/../becadit/storedData\r')
+	if out.find("node app.js") == -1:
+		os.chdir(location+"/../becadit/")
+		subprocess.Popen('node app.js', shell=True)
 
 def correlator():
-	#corr1()
+	corr1()
 	corr2()
 
 
@@ -105,12 +107,12 @@ def sensorPAE():
 
 
 #SEC()
-#nodeJS()
+nodeJS()
 #tsusen()
-#social()
-#sensorUSB()
-#bluetooth()
-#sensorPAE()
+social()
+sensorUSB()
+bluetooth()
+sensorPAE()
 correlator()
 
 

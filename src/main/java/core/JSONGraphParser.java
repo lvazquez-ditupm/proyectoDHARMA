@@ -93,7 +93,7 @@ public class JSONGraphParser {
                 String[] nodesArray = net.getAllNodeIds();
                 String newLine = "";
                 for (String node : nodesArray) {
-                    newLine+=node+",";
+                    newLine += node + ",";
                 }
                 newLine = newLine.substring(0, newLine.length() - 1);
                 newLine += "\n";

@@ -13,9 +13,9 @@ import java.util.HashMap;
  * @version 1.0
  */
 public class PaeManager {
-    
+
     private HashMap<String, HashMap<String, Object>> output = new HashMap<>();
-    
+
     public PaeManager(String path) {
         try {
             String input = new String(Files.readAllBytes(Paths.get(path)));

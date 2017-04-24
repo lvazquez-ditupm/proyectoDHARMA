@@ -15,6 +15,8 @@ import java.util.HashMap;
  * This class handles the correlator data. It get the values, adds a date and a
  * tag to identify the correlation
  *
+ * @author UPM (member of DHARMA Development Team) (http://dharma.inf.um.es)
+ * @version 1.0
  */
 public class CorrelatorManager {
 

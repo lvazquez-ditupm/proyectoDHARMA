@@ -239,7 +239,7 @@ public class SensorCollector implements Runnable {
                 output[0] = sensorItem;
                 output[1] = path.toString();
                 break;
-            } 
+            }
         }
 
         return output;

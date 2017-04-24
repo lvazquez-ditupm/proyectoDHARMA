@@ -36,7 +36,9 @@ public class SECEventReceiver implements Runnable {
                         str = idmefDatos.readLine();
                         if (!str.equals("")) {
                             HashMap superEvent = parseSECString(str);
-                            ReasonerInput.newSuperEvent(superEvent);
+                            if (superEvent != null) {
+                                ReasonerInput.newSuperEvent(superEvent);
+                            }
                         }
                     }
                 } catch (IOException ex) {
@@ -49,8 +51,12 @@ public class SECEventReceiver implements Runnable {
     }
 
     private HashMap parseSECString(String str) {
+
+        String date = str.substring(0, str.indexOf(": "));
+        str = str.substring(str.indexOf(": ") + 2);
         //TODO
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        //System.err.println(str);
+        return null;
     }
 
 }
