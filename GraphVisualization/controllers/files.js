@@ -5,7 +5,7 @@ exports.removeFile = function(req, res, next){
 	var messageDHARMA = new Buffer("Finished attack: id="+req.query.id);
 	var client1 = dgram1.createSocket("udp4");	
 
-	client1.send(messageDHARMA, 0, messageDHARMA.length, 5000, "127.0.0.1", function(err) {
+	client1.send(messageDHARMA, 0, messageDHARMA.length, 5050, "138.4.7.191", function(err) {
 		client1.close();
 	});
 	

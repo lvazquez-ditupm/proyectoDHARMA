@@ -3,7 +3,7 @@
 	"ESTADO": 0,
 	"ACTIVOS": {
 		"1958": 2,
-		"Activo2": 3,
+		"Activo2": 2,
 		"Activo5": 1
 	}
 }, {

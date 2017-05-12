@@ -1,0 +1,23 @@
+0 info it worked if it ends with ok
+1 verbose cli [ '/usr/bin/nodejs', '/usr/bin/npm', 'start' ]
+2 info using npm@2.15.11
+3 info using node@v4.8.3
+4 verbose run-script [ 'prestart', 'start', 'poststart' ]
+5 info prestart visualizacion@0.0.0
+6 info start visualizacion@0.0.0
+7 verbose unsafe-perm in lifecycle true
+8 verbose stack Error: write EPIPE
+8 verbose stack     at exports._errnoException (util.js:907:11)
+8 verbose stack     at WriteWrap.afterWrite (net.js:790:14)
+9 verbose cwd /home/saturno/NetBeansProjects/proyectoDHARMA/GraphVisualization
+10 error Linux 4.8.0-51-generic
+11 error argv "/usr/bin/nodejs" "/usr/bin/npm" "start"
+12 error node v4.8.3
+13 error npm  v2.15.11
+14 error code EPIPE
+15 error errno EPIPE
+16 error syscall write
+17 error write EPIPE
+18 error If you need help, you may report this error at:
+18 error     <https://github.com/npm/npm/issues>
+19 verbose exit [ 1, true ]

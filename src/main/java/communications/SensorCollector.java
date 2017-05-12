@@ -163,7 +163,8 @@ public class SensorCollector implements Runnable {
     public static void receiveNewData(HashMap<String, HashMap<String, Object>> input) {
 
         String event = input.entrySet().iterator().next().getKey();
-        HashMap infoMap = gson.fromJson(input.entrySet().iterator().next().getValue().toString(), HashMap.class);
+        String aux = input.entrySet().iterator().next().getValue().toString();
+        HashMap infoMap = gson.fromJson(aux, HashMap.class);
         String info = gson.toJson(infoMap);
         long timestamp = System.currentTimeMillis();
 

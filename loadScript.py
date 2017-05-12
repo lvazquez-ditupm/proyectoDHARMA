@@ -48,7 +48,7 @@ def bt1():
 	if out.find("python bluetooth.py") == -1:
 		print 'Arrancando sensor Bluetooth'
 		os.chdir(location+"/sensors/bluetooth")
-		subprocess.Popen('python bluetooth.py 60 ./input.txt', shell=True)
+		subprocess.Popen('python bluetooth.py 10 ./input.txt', shell=True)
 
 def bt2():
 	ps = subprocess.Popen('ps -ef | grep SensorBluetooth.jar', stdout=subprocess.PIPE, shell=True)
@@ -56,12 +56,12 @@ def bt2():
 	if out.find("java -jar SensorBluetooth.jar") == -1:
 		print 'Arrancando procesador Bluetooth'
 		os.chdir(location+"/sensors/bluetooth")
-		subprocess.Popen('java -jar SensorBluetooth.jar exec 60 root asdf ./input.txt ./output.txt', shell=True)
+		subprocess.Popen('java -jar SensorBluetooth.jar exec 10 root asdf ./input.txt ./output.txt', shell=True)
 
 def bluetooth():
 	with open(pathsFile, "a") as myfile:
 		myfile.write("BLUETOOTH///"+location+"/sensors/bluetooth/output.txt\r")
-	#bt1()
+	bt1()
 	bt2()
 
 

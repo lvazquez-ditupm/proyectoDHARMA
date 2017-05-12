@@ -4,7 +4,9 @@ import communications.SensorCollector;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -26,7 +28,8 @@ public class BluetoothManager {
                 return;
             }
             input = input.replace("\n", "");
-            String[] addresses = input.split(", ");
+            String[] addressArray = input.split(", ");
+            List<String> addresses = Arrays.asList(addressArray);
             anomalies.put("Anomalies", addresses);
             anomalies.put("Date", System.currentTimeMillis());
             output.put("Bluetooth", anomalies);

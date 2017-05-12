@@ -15,7 +15,9 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.jgrapht.graph.*;
 import control.Dharma;
+import java.util.Date;
 import utils.DharmaProperties;
+import utils.TimeWindowManager;
 
 /**
  * This class represents the Bayesian Acyclic Graph needed to make an Attack
@@ -244,6 +246,7 @@ public class Graph {
         }
     }
 
+
     /*
     Otros getters y setters
      */
@@ -282,4 +285,5 @@ public class Graph {
     public ArrayList<String> getFutureNodes() {
         return futureNodes;
     }
+
 }

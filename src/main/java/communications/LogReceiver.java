@@ -1,12 +1,15 @@
 package communications;
 
 import control.Dharma;
+import control.Main;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.SocketException;
 import java.net.UnknownHostException;
 import control.MarkovController;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import utils.IDSManager;
 import utils.NetAnomManager;
 
@@ -23,9 +26,9 @@ public class LogReceiver {
     String log_received;
     Dharma dharma = new Dharma();
 
-    public LogReceiver(int UDPport, String ip) {
+    public LogReceiver(int UDPportHMM, String ip) {
         try {
-            socketUDP = new DatagramSocket(UDPport, InetAddress.getByName(ip));
+            socketUDP = new DatagramSocket(UDPportHMM, InetAddress.getByName(ip));
         } catch (UnknownHostException | SocketException e) {
             System.err.println("Imposible obtener acceso al socket UDP. Terminando sistema...");
             System.exit(0);
@@ -34,14 +37,14 @@ public class LogReceiver {
 
     public void start() {
         System.out.println("****  Arrancando receptor de logs de HMM  ****");
-        ReceiveSocketUDPAlert u = new ReceiveSocketUDPAlert();
-        new Thread(u).start();
+        ReceiveSocketUDP h = new ReceiveSocketUDP();
+        new Thread(h).start();
     }
 
     /**
      * Recibe datos del socket UDP y los gestiona
      */
-    class ReceiveSocketUDPAlert implements Runnable {
+    class ReceiveSocketUDP implements Runnable {
 
         MarkovController markovController = new MarkovController();
 
@@ -49,6 +52,7 @@ public class LogReceiver {
         public void run() {
             try {
                 byte[] buf = new byte[4096];
+
                 while (true) {
                     DatagramPacket packet = new DatagramPacket(buf, buf.length);
                     socketUDP.receive(packet);
@@ -62,14 +66,18 @@ public class LogReceiver {
                         } else if (receivedLog.contains("NetAnom///")) {
                             new NetAnomManager(receivedLog.substring(10));
                         } else {
-                            markovController.parse(receivedLog);
+                            try{
+                                markovController.parse(receivedLog);
+                            }catch(Exception ex){
+                                Logger.getLogger(LogReceiver.class.getName()).log(Level.SEVERE, null, ex);
+                            }
+                            
                         }
                     }
                 }
-            } catch (Exception e) {
-                System.err.println(e);
+            } catch (Exception ex) {
+                Logger.getLogger(LogReceiver.class.getName()).log(Level.SEVERE, null, ex);
             }
         }
     }
-
 }

@@ -45,7 +45,7 @@ while True:
         '''      
         
         hcitool = hcitool.splitlines()[1:]
-        
+
         for line in hcitool:
             
             macaddr = line.split('\t')[1]
@@ -55,6 +55,9 @@ while True:
         
         #data = data[:-1]+json.dumps({int(time.time()): {"LAPs" : ubertoothResult, "visibleAddr" : hcitoolResult}})[1:-1]+",}"
         data = json.dumps(hcitoolResult)[2:-2]
+        
+
+    print(data)
     
     if data != "":
         with io.FileIO(sys.argv[2], "a") as file:

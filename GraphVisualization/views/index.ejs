@@ -395,7 +395,12 @@
 					"font-weight":"bold"})
 				.text(function(d){
 					if(d.status.includes("current")){
-						return "HMM: "+d.status.substring(7)*100+"%";
+						value = d.status.substring(7)*100
+						if(isNaN(value)){
+							return "HMM: " + d.status.substring(7);
+						}else{
+							return "HMM: "+value+"%";
+						}
 					}
 				});
 

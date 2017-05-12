@@ -8,6 +8,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -142,6 +143,53 @@ public class BayesNetworkManager {
                 }
             }
         } while (retry);
+    }
+
+    /**
+     * Modifica las CPT de ciertos nodos
+     *
+     * @param variation variacion para cada nodo
+     */
+    public void timeWindow(String reachedNode, double variation) {
+        reachedNode = spacesToUnderscore(reachedNode);
+        for (String node : nodes) {
+            String[] parents = net.getParentIds(node);
+            if (!Arrays.asList(parents).contains(reachedNode)) {
+                continue;
+            }
+            double[] cpt = net.getNodeDefinition(node);
+
+            int i;
+            for (i = 0; i < parents.length; i++) {
+                if (parents[i].equals(reachedNode)) {
+                    break;
+                }
+            }
+
+            int factor = (int) Math.pow(2, (parents.length - i));
+            boolean flag1 = false;
+            boolean flag2 = false;
+            int j = 0;
+
+            for (i = 0; i < cpt.length; i++) {
+                if (flag1) {
+                    if (flag2) {
+                        cpt[i] += variation;
+                    } else {
+                        cpt[i] -= variation;
+                    }
+
+                    flag2 = !flag2;
+                }
+                j++;
+                if (j == factor) {
+                    j = 0;
+                    flag1 = !flag1;
+                }
+            }
+            net.setNodeDefinition(node, cpt);
+            net.writeFile("bayesNet2.xdsl");
+        }
     }
 
     /**
