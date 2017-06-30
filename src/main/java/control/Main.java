@@ -28,20 +28,19 @@ public class Main {
     private static Dharma dharma;
     private static MarkovController markovController;
     private static SensorCollector sensorCollector;
-    
+
     private static final DharmaProperties props = new DharmaProperties();
 
     public static void main(String[] args) {
 
         try {
-            
+
             Graph.exportCleanJSON();
-            //markovController = new MarkovController();
             //markovController.parse("IDAtaque=1;TipoAtaque=Denegacion de Servicio;Nodos=Intento de intrusion,Buffer Overflow,Denegacion de Servicio;Estado=Buffer Overflow;PEstado=0.9998914037855784;PFinal=0.6231988799803523;Risk=2;Markovid=1");
             Dharma dharma = new Dharma();
             //dharma.removeGraph(1);
+            //new CorrelatorManager(props.getDatasetPathValue());
 
-            new CorrelatorManager(props.getDatasetPathValue());
             eventReceiver = new SECEventReceiver();
             new Thread(eventReceiver).start();
             ActivePeriods.create();
@@ -54,14 +53,14 @@ public class Main {
 
             sensorCollector = new SensorCollector(props.getAnomalyPathsValue());
             new Thread(sensorCollector).start();          
-            
             logReceiver = new LogReceiver(Integer.parseInt(args[1]), args[0]);
             logReceiver.start();
-            
+             
+            /*markovController = new MarkovCon<troller();
+            markovController.parse("IDAtaque=1;TipoAtaque=Denegacion de Servicio;Nodos=Intento de intrusion,Buffer Overflow,Denegacion de Servicio;Estado=Intento de intrusion;PEstado=0.9798914037855784;PFinal=0.6231988799803523;Risk=2;Markovid=1");
+            markovController.parse("IDAtaque=1;TipoAtaque=Denegacion de Servicio;Nodos=Intento de intrusion,Buffer Overflow,Denegacion de Servicio;Estado=Buffer Overflow;PEstado=0.9798914037855784;PFinal=0.6231988799803523;Risk=2;Markovid=1");
+            */
             //new Thread(new TimeWindowManager(getTimeWindow(), getProbIncrement(), node, bayesNet)).start();
-            
-            
-            
         } catch (Exception ex) {
             Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);
         }

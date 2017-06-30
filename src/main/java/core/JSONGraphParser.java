@@ -85,7 +85,7 @@ public class JSONGraphParser {
         parsedGraph.put("edges", exportedEdges);
 
         if (!new File("bayesNet.xdsl").exists()) {
-            net.writeFile("bayesNet.xdsl");
+            net.writeFile("bayesNet.xdsl");      
         }
         if (!new File("bayesNet.txt").exists()) {
             Writer output = null;

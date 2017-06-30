@@ -1,1 +1,1 @@
-{"UsageAnom":{"Activo2":["2","1"],"1958":["2","1"],"Activo4":["1","3"]},"OcupationAnom":{"15":"1"},"RegistrationAnom":{"Activo5":["15","14"]},"Time":57312}
+{"UsageAnom":{"Activo2":["1","0"]},"OcupationAnom":{"14":"1","15":"1"},"RegistrationAnom":{},"Time":41580}

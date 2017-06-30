@@ -1,5 +1,6 @@
 package utils;
 
+import com.google.gson.Gson;
 import communications.SensorCollector;
 import java.util.HashMap;
 
@@ -13,14 +14,14 @@ public class IDSManager {
 
     public IDSManager(String alert) {
         HashMap output = new HashMap<>();
-        HashMap IDS = new HashMap<>();
         HashMap data = new HashMap<>();
+        HashMap anomaly = new Gson().fromJson(alert, HashMap.class);
 
-        IDS.put("Anomaly", alert);
+        data.put("Anomaly", anomaly);
         data.put("Date", System.currentTimeMillis());
         output.put("IDS", data);
 
         SensorCollector.receiveNewData(output);
-    }
+     }
     
 }

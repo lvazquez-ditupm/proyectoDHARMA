@@ -109,10 +109,10 @@ def sensorPAE():
 #SEC()
 nodeJS()
 #tsusen()
-social()
-sensorUSB()
-bluetooth()
-sensorPAE()
-correlator()
+#social()
+#sensorUSB()
+#bluetooth()
+#sensorPAE()
+#correlator()
 
 

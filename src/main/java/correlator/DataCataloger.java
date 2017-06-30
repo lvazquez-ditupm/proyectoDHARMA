@@ -157,7 +157,7 @@ public class DataCataloger implements Runnable {
             SimpleDateFormat refFormat = new SimpleDateFormat("yyyy");
             current = new Date();
             try {
-                reference = refFormat.parse("1");
+                reference = refFormat.parse(props.getTimestampReferenceValue());
                 Boolean flag = false;
                 for (String typeItem : types) {
                     SimpleDateFormat format = new SimpleDateFormat(typeItem);

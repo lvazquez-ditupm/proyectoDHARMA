@@ -32,6 +32,7 @@ public class BayesNetworkManager {
     public BayesNetworkManager() {
         net = new Network();
         net.readFile("bayesNet.xdsl");
+        updateProbs();
         nodes = net.getAllNodeIds();
     }
 
@@ -45,8 +46,9 @@ public class BayesNetworkManager {
         ds.matchNetwork(net);
         DataMatch[] matching = ds.matchNetwork(net);
         final EM em = new EM();
-        em.setEqSampleSize(5);
-        em.setRandomizeParameters(true);
+        //em.setUniformizeParameters(true);
+        //em.setRandomizeParameters(false);
+        //em.setEqSampleSize(5);
         em.learn(ds, net, matching);
         net.updateBeliefs();
         net.writeFile("bayesNet.xdsl");
@@ -60,7 +62,7 @@ public class BayesNetworkManager {
     public void eventOcurred(String node) {
         net.setEvidence(spacesToUnderscore(node), "True");
         net.updateBeliefs();
-        filterNodes();
+        //filterNodes();
     }
 
     /**
@@ -81,7 +83,7 @@ public class BayesNetworkManager {
      * Cuando es imposible llegar a un nodo desde el "current", se pone su
      * evidencia a 0
      */
-    private void filterNodes() {
+    /*private void filterNodes() {
         //Los nodos hijos de los "previous" se evidencian a 0
         for (String node : nodes) {
             if (net.isEvidence(node)) {
@@ -143,7 +145,7 @@ public class BayesNetworkManager {
                 }
             }
         } while (retry);
-    }
+    }*/
 
     /**
      * Modifica las CPT de ciertos nodos

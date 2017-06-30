@@ -1,16 +1,15 @@
 [{
 	"SALA": 14,
-	"ESTADO": 0,
+	"ESTADO": 1,
 	"ACTIVOS": {
-		"1958": 2,
-		"Activo2": 2,
-		"Activo5": 1
+		"Activo2": 1
 	}
 }, {
 	"SALA": 15,
 	"ESTADO": 1,
 	"ACTIVOS": {
 		"Activo3": 2,
-		"Activo4": 1
+		"Activo4": 2,
+		"Activo5": 1
 	}
 }]

@@ -83,7 +83,11 @@ public class SensorCollector implements Runnable {
             String[] input = new String(Files.readAllBytes(Paths.get(props.getAnomalyPathsValue()))).split("\r");
 
             for (String inputItem : input) {
-                inputItem = inputItem.substring(inputItem.indexOf("///"));
+                try{
+                    inputItem = inputItem.substring(inputItem.indexOf("///"));
+                }catch(Exception e){
+                    continue;
+                }
                 File file = new File(inputItem);
                 if (file.isDirectory()) {
                     //Paths.get(inputItem).register(watcher, ENTRY_MODIFY, ENTRY_CREATE);
@@ -147,7 +151,7 @@ public class SensorCollector implements Runnable {
                 new PaeManager(data[1]);
                 break;
             case "CORRELATOR":
-                new CorrelatorManager(data[1]);
+                //new CorrelatorManager(data[1]);
                 break;
             default:
                 break;
@@ -164,42 +168,51 @@ public class SensorCollector implements Runnable {
 
         String event = input.entrySet().iterator().next().getKey();
         String aux = input.entrySet().iterator().next().getValue().toString();
-        HashMap infoMap = gson.fromJson(aux, HashMap.class);
-        String info = gson.toJson(infoMap);
-        long timestamp = System.currentTimeMillis();
+        HashMap infoMap = new HashMap();
+        String info = "";
+        try {
+            infoMap = gson.fromJson(aux, HashMap.class);
+            info = gson.toJson(infoMap);
+        } catch (Exception e) {
+            infoMap = input.entrySet().iterator().next().getValue();
+            info = input.entrySet().iterator().next().getValue().toString();
+        } finally {
+            
+            long timestamp = System.currentTimeMillis();
 
-        if (event.contains("Correlator")) {
-            Iterator<Map.Entry<String, Object>> entries = infoMap.entrySet().iterator();
-            while (entries.hasNext()) {
-                Map.Entry<String, Object> entry = entries.next();
-                if (!((entry.getValue().equals("{}") || entry.getKey().equals("Time") || entry.getKey().equals("Date")))) {
-                    HashMap output = new HashMap();
-                    output.put("Anomaly", infoMap.get(entry.getKey()));
-                    output.put("Date", infoMap.get("Date"));
-                    sendToCorrelator(event + "///" + gson.toJson(output) + "///" + timestamp);
+            if (event.contains("Correlator")) {
+                Iterator<Map.Entry<String, Object>> entries = infoMap.entrySet().iterator();
+                while (entries.hasNext()) {
+                    Map.Entry<String, Object> entry = entries.next();
+                    if (!((entry.getValue().equals("{}") || entry.getKey().equals("Time") || entry.getKey().equals("Date")))) {
+                        HashMap output = new HashMap();
+                        output.put("Anomaly", infoMap.get(entry.getKey()));
+                        output.put("Date", infoMap.get("Date"));
+                        sendToCorrelator(event + "///" + gson.toJson(output) + "///" + timestamp);
+                    }
                 }
-            }
-        } else if (event.equals("PAE")) {
-            Iterator<Map.Entry<String, Object>> entries = infoMap.entrySet().iterator();
-            while (entries.hasNext()) {
-                Map.Entry<String, Object> entry = entries.next();
-                if (!((entry.getValue().equals("{}") || entry.getKey().equals("Time") || entry.getKey().equals("Date")))) {
-                    HashMap output = new HashMap();
-                    output.put("Anomaly", infoMap.get(entry.getKey()));
-                    output.put("Time", infoMap.get("Time"));
-                    output.put("Date", infoMap.get("Date"));
-                    sendToCorrelator("PAE-" + entry.getKey() + "///" + gson.toJson(output) + "///" + timestamp);
+            } else if (event.equals("PAE")) {
+                Iterator<Map.Entry<String, Object>> entries = infoMap.entrySet().iterator();
+                while (entries.hasNext()) {
+                    Map.Entry<String, Object> entry = entries.next();
+                    if (!((entry.getValue().equals("{}") || entry.getKey().equals("Time") || entry.getKey().equals("Date")))) {
+                        HashMap output = new HashMap();
+                        output.put("Anomaly", infoMap.get(entry.getKey()));
+                        output.put("Time", infoMap.get("Time"));
+                        output.put("Date", infoMap.get("Date"));
+                        sendToCorrelator("PAE-" + entry.getKey() + "///" + gson.toJson(output) + "///" + timestamp);
+                    }
                 }
+
+            } else {
+                sendToCorrelator(event + "///" + info + "///" + timestamp);
             }
 
-        } else {
-            sendToCorrelator(event + "///" + info + "///" + timestamp);
+            anomalies.putAll(input);
+            anomalies.put("Timestamp", timestamp);
+            String jsonString = gson.toJson(anomalies);
+            ReasonerInput.newDataMap(gson.fromJson(jsonString, HashMap.class));
         }
-
-        anomalies.putAll(input);
-        anomalies.put("Timestamp", timestamp);
-        String jsonString = gson.toJson(anomalies);
-        ReasonerInput.newDataMap(gson.fromJson(jsonString, HashMap.class));
 
     }
 
